@@ -1,22 +1,23 @@
 import { atom, useAtom } from "jotai";
+import { useEffect } from "react";
 
 const pictures = [
-  "DSC00680",
-  "DSC00933",
-  "DSC00966",
-  "DSC00983",
-  "DSC01011",
-  "DSC01040",
-  "DSC01064",
-  "DSC01071",
-  "DSC01103",
-  "DSC01145",
-  "DSC01420",
-  "DSC01461",
-  "DSC01489",
-  "DSC02031",
-  "DSC02064",
-  "DSC02069",
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  "10",
+  "11",
+  "12",
+  "13",
+  "14",
+  "15",
+  "16",
 ];
 
 export const pageAtom = atom(0);
@@ -41,17 +42,28 @@ pages.push({
 export const UI = () => {
   const [page, setPage] = useAtom(pageAtom);
 
+  useEffect(() => {
+    const audio = new Audio("/audios/page-flip-01a.mp3");
+    audio.play().catch((error) => {
+      // Silently handle the error - audio will play on subsequent user interactions
+      console.log(
+        "Audio play failed (requires user interaction):",
+        error.message
+      );
+    });
+  }, [page]);
+
   return (
     <>
-      <main className=" pointer-events-none select-none z-10 fixed  inset-0  flex justify-end flex-col">
+      <main className="pointer-events-none select-none z-10 fixed inset-0 flex justify-end flex-col">
         <div className="w-full overflow-auto pointer-events-auto flex justify-center">
-          <div className="overflow-auto flex items-center gap-4 max-w-full p-10">
+          <div className="overflow-auto flex items-center gap-2 sm:gap-4 max-w-full p-4 sm:p-6 md:p-10">
             {[...pages].map((_, index) => (
               <button
                 key={index}
-                className={`border-transparent hover:border-white transition-all duration-300  px-4 py-3 rounded-full  text-lg uppercase shrink-0 border ${
+                className={`py-2 md:py-3 px-6 md:px-8 border border-white rounded-full text-white hover:cursor-pointer hover:text-white font-poppins text-base md:text-lg tracking-wide hover:scale-105 transition-all duration-300 ${
                   index === page
-                    ? "bg-white/90 text-black"
+                    ? "bg-white !text-black hover:!text-white"
                     : "bg-black/30 text-white"
                 }`}
                 onClick={() => setPage(index)}
@@ -60,9 +72,9 @@ export const UI = () => {
               </button>
             ))}
             <button
-              className={`border-transparent hover:border-white transition-all duration-300  px-4 py-3 rounded-full  text-lg uppercase shrink-0 border ${
+              className={`py-2 md:py-3 px-6 md:px-8 border border-white rounded-full text-white hover:cursor-pointer hover:text-white font-poppins  text-base md:text-lg tracking-wide hover:scale-105 transition-all duration-300 ${
                 page === pages.length
-                  ? "bg-white/90 text-black"
+                  ? "bg-white !text-black hover:!text-white"
                   : "bg-black/30 text-white"
               }`}
               onClick={() => setPage(pages.length)}
@@ -73,7 +85,7 @@ export const UI = () => {
         </div>
       </main>
 
-      <div className="fixed  flex items-center  select-none">
+      <div className="fixed items-center select-none">
         <div className="relative">
           <div className="bg-white/0  animate-horizontal-scroll flex items-center gap-8 w-max px-8">
             <h1 className="shrink-0 text-white text-10xl font-black ">
@@ -88,7 +100,6 @@ export const UI = () => {
             <h2 className="shrink-0 text-transparent text-12xl font-bold italic outline-text">
               Ultimate Guide
             </h2>
-            <h2 className="shrink-0 text-white text-9xl font-medium">Cheap</h2>
             <h2 className="shrink-0 text-white text-9xl font-extralight italic">
               3D
             </h2>
@@ -101,7 +112,7 @@ export const UI = () => {
           </div>
           <div className="absolute top-0 left-0 bg-white/0 animate-horizontal-scroll-2 flex items-center gap-8 px-8 w-max">
             <h1 className="shrink-0 text-white text-10xl font-black ">
-              Wawa Sensei
+              Snep Software
             </h1>
             <h2 className="shrink-0 text-white text-8xl italic font-light">
               React Three Fiber
@@ -110,13 +121,10 @@ export const UI = () => {
               Three.js
             </h2>
             <h2 className="shrink-0 text-transparent text-12xl font-bold italic outline-text">
-              Ultimate Guide
-            </h2>
-            <h2 className="shrink-0 text-white text-9xl font-medium">
-              Tutorials
+              Flipbook
             </h2>
             <h2 className="shrink-0 text-white text-9xl font-extralight italic">
-              Learn
+              3D
             </h2>
             <h2 className="shrink-0 text-white text-13xl font-bold">
               Practice
