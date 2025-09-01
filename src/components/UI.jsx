@@ -57,13 +57,13 @@ export const UI = () => {
     <>
       <main className="pointer-events-none select-none z-10 fixed inset-0 flex justify-end flex-col">
         <div className="w-full overflow-auto pointer-events-auto flex justify-center">
-          <div className="overflow-auto flex items-center gap-2 sm:gap-4 max-w-full p-4 sm:p-6 md:p-10">
+          <div className="overflow-auto flex items-center gap-2 sm:gap-4 max-w-full p-4 lg:p-10">
             {[...pages].map((_, index) => (
               <button
                 key={index}
-                className={`py-2 md:py-3 px-6 md:px-8 border border-white rounded-full text-white hover:cursor-pointer hover:text-white font-poppins text-base md:text-lg tracking-wide hover:scale-105 transition-all duration-300 ${
+                className={`whitespace-nowrap py-2 lg:py-3 px-6 lg:px-8 border border-white rounded-full text-white hover:cursor-pointer hover:text-white font-poppins text-base lg:text-lg tracking-wide hover:scale-105 transition-all duration-300 ${
                   index === page
-                    ? "bg-white !text-black hover:!text-white"
+                    ? "bg-white !text-black "
                     : "bg-black/30 text-white"
                 }`}
                 onClick={() => setPage(index)}
@@ -72,9 +72,9 @@ export const UI = () => {
               </button>
             ))}
             <button
-              className={`py-2 md:py-3 px-6 md:px-8 border border-white rounded-full text-white hover:cursor-pointer hover:text-white font-poppins  text-base md:text-lg tracking-wide hover:scale-105 transition-all duration-300 ${
+              className={`whitespace-nowrap py-2 lg:py-3 px-6 lg:px-8 border border-white rounded-full text-white hover:cursor-pointer hover:text-white font-poppins  text-base lg:text-lg tracking-wide hover:scale-105 transition-all duration-300 ${
                 page === pages.length
-                  ? "bg-white !text-black hover:!text-white"
+                  ? "bg-white !text-black "
                   : "bg-black/30 text-white"
               }`}
               onClick={() => setPage(pages.length)}
