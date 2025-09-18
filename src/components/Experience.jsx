@@ -4,9 +4,11 @@ import { useAtom } from "jotai";
 import { pageAtom } from "./UI";
 import { useEffect } from "react";
 import { useThree } from "@react-three/fiber";
+import { usePages } from "../contexts/PagesContext";
 
 export const Experience = () => {
   const [page] = useAtom(pageAtom);
+  const { pages } = usePages();
   const isBookOpened = page > 0;
   const { camera, viewport } = useThree();
 
@@ -35,7 +37,7 @@ export const Experience = () => {
 
   return (
     <>
-      <Book />
+      <Book pages={pages} />
       <OrbitControls
         maxDistance={8}
         minDistance={2}
