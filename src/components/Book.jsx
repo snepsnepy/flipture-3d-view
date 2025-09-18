@@ -13,8 +13,9 @@ import {
   Float32BufferAttribute,
   SRGBColorSpace,
   MathUtils,
+  TextureLoader,
 } from "three";
-import { pages, pageAtom } from "./UI";
+import { pageAtom } from "./UI";
 import { useFrame } from "@react-three/fiber";
 import { useTexture, useCursor } from "@react-three/drei";
 import { degToRad } from "three/src/math/MathUtils.js";
@@ -78,22 +79,54 @@ const pageMaterials = [
   new MeshStandardMaterial({ color: whiteColor }),
 ];
 
-pages.forEach((page) => {
-  useTexture.preload(`/textures/${page.front}.jpg`);
-  useTexture.preload(`/textures/${page.back}.jpg`);
-  useTexture.preload(`/textures/book-cover-roughness.jpg`);
-});
+// Preload textures for book covers
+useTexture.preload(`/textures/book-cover.jpg`);
+useTexture.preload(`/textures/book-back.jpg`);
+useTexture.preload(`/textures/book-cover-roughness.jpg`);
 
-const Page = ({ number, front, back, page, opened, bookClosed, ...props }) => {
-  const [picture, picture2, pictureRoughness] = useTexture([
-    `/textures/${front}.jpg`,
-    `/textures/${back}.jpg`,
-    ...(number === 0 || number === pages.length - 1
-      ? [`/textures/book-cover-roughness.jpg`]
-      : []),
-  ]);
+const Page = ({
+  number,
+  front,
+  back,
+  page,
+  opened,
+  bookClosed,
+  pages,
+  ...props
+}) => {
+  const [picture, setPicture] = useState(null);
+  const [picture2, setPicture2] = useState(null);
+  const [pictureRoughness, setPictureRoughness] = useState(null);
 
-  picture.colorSpace = picture2.colorSpace = SRGBColorSpace;
+  // Load textures based on whether they are data URLs or file paths
+  useEffect(() => {
+    const loader = new TextureLoader();
+
+    // Load front texture
+    if (front.startsWith("data:")) {
+      loader.load(front, setPicture);
+    } else {
+      loader.load(`/textures/${front}.jpg`, setPicture);
+    }
+
+    // Load back texture
+    if (back.startsWith("data:")) {
+      loader.load(back, setPicture2);
+    } else {
+      loader.load(`/textures/${back}.jpg`, setPicture2);
+    }
+
+    // Load roughness texture for covers
+    if (number === 0 || number === pages.length - 1) {
+      loader.load("/textures/book-cover-roughness.jpg", setPictureRoughness);
+    }
+  }, [front, back, number, pages.length]);
+
+  // Set color space when textures are loaded
+  useEffect(() => {
+    if (picture) picture.colorSpace = SRGBColorSpace;
+    if (picture2) picture2.colorSpace = SRGBColorSpace;
+  }, [picture, picture2]);
 
   const group = useRef();
   const turnedAt = useRef(0);
@@ -151,7 +184,7 @@ const Page = ({ number, front, back, page, opened, bookClosed, ...props }) => {
     mesh.bind(skeleton);
 
     return mesh;
-  }, []);
+  }, [picture, picture2, pictureRoughness, number, pages.length]);
 
   //   useHelper(skinnedMeshRef, SkeletonHelper, "red");
 
@@ -260,7 +293,7 @@ const Page = ({ number, front, back, page, opened, bookClosed, ...props }) => {
   );
 };
 
-export const Book = ({ ...props }) => {
+export const Book = ({ pages = [], ...props }) => {
   const [page] = useAtom(pageAtom);
   const [delayedPage, setDelayedPage] = useState(page);
   const [scale, setScale] = useState(1);
@@ -321,6 +354,7 @@ export const Book = ({ ...props }) => {
           number={index}
           opened={delayedPage > index}
           bookClosed={delayedPage === 0 || delayedPage === pages.length}
+          pages={pages}
           {...pageData}
         />
       ))}

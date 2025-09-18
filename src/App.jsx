@@ -1,13 +1,16 @@
 import { Loader } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { Experience } from "./components/Experience";
 import { UI } from "./components/UI";
+import { PagesProvider } from "./contexts/PagesContext";
 
 function App() {
+  const [pages, setPages] = useState([]);
+
   return (
-    <>
-      <UI />
+    <PagesProvider pages={pages}>
+      <UI onPagesChange={setPages} />
       <Loader />
       <Canvas shadows camera={{ position: [-0.5, 1, 4], fov: 45 }}>
         <group position-y={0}>
@@ -16,7 +19,7 @@ function App() {
           </Suspense>
         </group>
       </Canvas>
-    </>
+    </PagesProvider>
   );
 }
 
