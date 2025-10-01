@@ -102,15 +102,30 @@ const Page = ({
   useEffect(() => {
     const loader = new TextureLoader();
 
+    // Create blank white texture for blank pages
+    const createBlankTexture = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 512;
+      canvas.height = 512;
+      const context = canvas.getContext("2d");
+      context.fillStyle = "#ffffff";
+      context.fillRect(0, 0, 512, 512);
+      return canvas.toDataURL();
+    };
+
     // Load front texture
-    if (front.startsWith("data:")) {
+    if (front === "blank-page") {
+      loader.load(createBlankTexture(), setPicture);
+    } else if (front.startsWith("data:")) {
       loader.load(front, setPicture);
     } else {
       loader.load(`/textures/${front}.jpg`, setPicture);
     }
 
     // Load back texture
-    if (back.startsWith("data:")) {
+    if (back === "blank-page") {
+      loader.load(createBlankTexture(), setPicture2);
+    } else if (back.startsWith("data:")) {
       loader.load(back, setPicture2);
     } else {
       loader.load(`/textures/${back}.jpg`, setPicture2);

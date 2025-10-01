@@ -4,7 +4,13 @@ import { PDFtoIMG } from "../utils/pdfUtils";
 
 export const pageAtom = atom(0);
 
-export const UI = ({ onPagesChange }) => {
+export const UI = ({
+  onPagesChange,
+  pdfUrl,
+  flipbookTitle,
+  loading,
+  error,
+}) => {
   const [page, setPage] = useAtom(pageAtom);
   const [pdfImages, setPdfImages] = useState([]);
   const [conversionProgress, setConversionProgress] = useState({
@@ -22,21 +28,45 @@ export const UI = ({ onPagesChange }) => {
     const pagesArray = [
       {
         front: "book-cover",
-        back: pdfImages[0],
+        back: "blank-page", // Blank page after cover
       },
     ];
 
-    for (let i = 1; i < pdfImages.length - 1; i += 2) {
+    // Handle single page PDF case
+    if (pdfImages.length === 1) {
       pagesArray.push({
-        front: pdfImages[i % pdfImages.length],
-        back: pdfImages[(i + 1) % pdfImages.length],
+        front: pdfImages[0],
+        back: "book-back", // Single page goes directly to back cover
       });
-    }
+    } else {
+      // Multiple pages case
+      pagesArray.push({
+        front: pdfImages[0],
+        back: pdfImages[1],
+      });
 
-    pagesArray.push({
-      front: pdfImages[pdfImages.length - 1],
-      back: "book-back",
-    });
+      // Start from index 2 since we've already used the first two PDF pages
+      for (let i = 2; i < pdfImages.length - 1; i += 2) {
+        pagesArray.push({
+          front: pdfImages[i],
+          back: pdfImages[i + 1] || "blank-page",
+        });
+      }
+
+      // Add the last page if there's an odd number of PDF pages (and more than 1)
+      if (pdfImages.length > 2 && pdfImages.length % 2 === 1) {
+        pagesArray.push({
+          front: pdfImages[pdfImages.length - 1],
+          back: "book-back",
+        });
+      } else {
+        // If even number of pages, add final page with back cover
+        pagesArray.push({
+          front: "blank-page",
+          back: "book-back",
+        });
+      }
+    }
 
     return pagesArray;
   }, [pdfImages]);
@@ -66,15 +96,17 @@ export const UI = ({ onPagesChange }) => {
     });
   }, [page]);
 
-  // Process PDF to images on component mount
+  // Process PDF to images when pdfUrl is available
   useEffect(() => {
     const processPDF = async () => {
+      if (!pdfUrl) return;
+
       try {
         setIsConverting(true);
         setConversionError(null);
         setConversionProgress({ completed: 0, total: 0 });
 
-        const pages = await PDFtoIMG("/files/test-file.pdf", {
+        const pages = await PDFtoIMG(pdfUrl, {
           onProgress: (completed, total) => {
             setConversionProgress({ completed, total });
           },
@@ -92,13 +124,16 @@ export const UI = ({ onPagesChange }) => {
       }
     };
 
-    processPDF();
-  }, []);
+    // Only process PDF if we have a URL and we're not loading from Supabase
+    if (pdfUrl && !loading) {
+      processPDF();
+    }
+  }, [pdfUrl, loading]);
 
   return (
     <>
       {/* Main Loader - Shows until flipbook is fully ready */}
-      {!isFullyLoaded && (
+      {(!isFullyLoaded || loading) && (
         <div className="fixed inset-0 bg-gradient-to-br from-[#0046FF] via-[#001BB7] to-[#000080] flex items-center justify-center z-50">
           <div className="text-center">
             {/* Animated Logo/Icon */}
@@ -115,7 +150,11 @@ export const UI = ({ onPagesChange }) => {
 
             {/* Loading Text */}
             <h2 className="text-3xl font-bold text-white mb-4 font-poppins">
-              {isConverting ? "Preparing Your Flipbook" : "Loading..."}
+              {loading
+                ? "Loading Flipbook Data..."
+                : isConverting
+                ? "Preparing Your Flipbook"
+                : "Loading..."}
             </h2>
 
             {/* Progress Indicator */}
@@ -188,14 +227,14 @@ export const UI = ({ onPagesChange }) => {
       )}
 
       {/* Error Message */}
-      {conversionError && (
+      {(conversionError || error) && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 text-center">
             <div className="text-red-500 text-6xl mb-4">⚠️</div>
             <h3 className="text-2xl font-bold text-gray-800 mb-4">
-              Conversion Failed
+              {error ? "Failed to Load Flipbook" : "Conversion Failed"}
             </h3>
-            <p className="text-gray-600 mb-6">{conversionError}</p>
+            <p className="text-gray-600 mb-6">{error || conversionError}</p>
             <button
               onClick={() => window.location.reload()}
               className="bg-red-500 text-white px-8 py-3 rounded-lg hover:bg-red-600 transition-colors font-semibold"
@@ -224,7 +263,11 @@ export const UI = ({ onPagesChange }) => {
                   }`}
                   onClick={() => setPage(index)}
                 >
-                  {index === 0 ? "Cover" : `Page ${index}`}
+                  {index === 0
+                    ? "Cover"
+                    : index === 1
+                    ? "Page 1"
+                    : `Page ${index}`}
                 </button>
               ))}
             {pages.length > 0 && (
@@ -249,7 +292,7 @@ export const UI = ({ onPagesChange }) => {
         }`}
       >
         <h1 className="shrink-0 text-white text-5xl lg:text-9xl font-poppins font-semibold pt-4">
-          Your Flipbook Title
+          {flipbookTitle}
         </h1>
       </div>
     </>
