@@ -92,6 +92,8 @@ const Page = ({
   opened,
   bookClosed,
   pages,
+  includeCover,
+  renderPages,
   ...props
 }) => {
   const [picture, setPicture] = useState(null);
@@ -114,28 +116,79 @@ const Page = ({
     };
 
     // Load front texture
-    if (front === "blank-page") {
+    let frontTexture = front;
+
+    // If includeCover is true and this is the front cover (number === 0),
+    // use the first PDF page instead of the default cover
+    if (includeCover && number === 0 && pages.length > 1) {
+      // Use the front texture from the second page (index 1) which is the first PDF page
+      frontTexture = pages[1]?.front || front;
+    }
+
+    if (frontTexture === "blank-page") {
       loader.load(createBlankTexture(), setPicture);
-    } else if (front.startsWith("data:")) {
-      loader.load(front, setPicture);
+    } else if (frontTexture.startsWith("data:")) {
+      loader.load(frontTexture, setPicture);
     } else {
-      loader.load(`/textures/${front}.jpg`, setPicture);
+      loader.load(`/textures/${frontTexture}.jpg`, setPicture);
     }
 
     // Load back texture
-    if (back === "blank-page") {
+    let backTexture = back;
+
+    // If includeCover is true and this is the back cover (last page),
+    // use the last PDF page instead of the default back cover
+    if (includeCover && number === renderPages.length - 1 && pages.length > 1) {
+      // Find the last PDF page from the original pages structure
+      let lastPdfPage = null;
+
+      // The last PDF page can be in two places depending on whether we have odd/even number of PDF pages:
+      // 1. If the second-to-last page has a PDF page in back position
+      if (
+        pages[pages.length - 2]?.back &&
+        pages[pages.length - 2].back.startsWith("data:")
+      ) {
+        lastPdfPage = pages[pages.length - 2].back;
+      }
+      // 2. If the last page has a PDF page in front position (odd number of PDF pages)
+      else if (
+        pages[pages.length - 1]?.front &&
+        pages[pages.length - 1].front.startsWith("data:")
+      ) {
+        lastPdfPage = pages[pages.length - 1].front;
+      }
+      // 3. Fallback: look backwards through all pages to find the last PDF content
+      else {
+        for (let i = pages.length - 1; i >= 1; i--) {
+          if (pages[i].back && pages[i].back.startsWith("data:")) {
+            lastPdfPage = pages[i].back;
+            break;
+          }
+          if (pages[i].front && pages[i].front.startsWith("data:")) {
+            lastPdfPage = pages[i].front;
+            break;
+          }
+        }
+      }
+
+      if (lastPdfPage) {
+        backTexture = lastPdfPage;
+      }
+    }
+
+    if (backTexture === "blank-page") {
       loader.load(createBlankTexture(), setPicture2);
-    } else if (back.startsWith("data:")) {
-      loader.load(back, setPicture2);
+    } else if (backTexture.startsWith("data:")) {
+      loader.load(backTexture, setPicture2);
     } else {
-      loader.load(`/textures/${back}.jpg`, setPicture2);
+      loader.load(`/textures/${backTexture}.jpg`, setPicture2);
     }
 
     // Load roughness texture for covers
     if (number === 0 || number === pages.length - 1) {
       loader.load("/textures/book-cover-roughness.jpg", setPictureRoughness);
     }
-  }, [front, back, number, pages.length]);
+  }, [front, back, number, pages.length, includeCover, pages, renderPages]);
 
   // Set color space when textures are loaded
   useEffect(() => {
@@ -300,7 +353,7 @@ const Page = ({
         // Check if we're on mobile
         const isMobile = window.innerWidth < 768;
 
-        if (isMobile && opened && page > 0 && page < pages.length) {
+        if (isMobile && opened && page > 0 && page < renderPages.length) {
           // On mobile, for opened pages, check if we should focus or turn page
           const isEvenPage = page % 2 === 0;
           const isLeftPageVisible = isEvenPage;
@@ -346,7 +399,7 @@ const Page = ({
   );
 };
 
-export const Book = ({ pages = [], ...props }) => {
+export const Book = ({ pages = [], includeCover = false, ...props }) => {
   const [page] = useAtom(pageAtom);
   const [pageFocus] = useAtom(pageFocusAtom);
   const [delayedPage, setDelayedPage] = useState(page);
@@ -354,6 +407,63 @@ export const Book = ({ pages = [], ...props }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [mobileOffset, setMobileOffset] = useState(0);
   const groupRef = useRef();
+
+  // When includeCover is true, reconstruct pages to avoid duplication
+  const renderPages = useMemo(() => {
+    if (includeCover && pages.length > 1) {
+      // Build a new pages array that skips the first and last PDF pages
+      const newPages = [pages[0]]; // Keep the cover page
+
+      // Collect all PDF pages except the first one (used as front cover) and last one (used as back cover)
+      const allPdfContent = [];
+
+      // Start from pages[1].back (second PDF page)
+      if (pages[1]?.back && pages[1].back.startsWith("data:")) {
+        allPdfContent.push(pages[1].back);
+      }
+
+      // Add all content from pages[2] onwards
+      for (let i = 2; i < pages.length; i++) {
+        if (pages[i].front && pages[i].front.startsWith("data:")) {
+          allPdfContent.push(pages[i].front);
+        }
+        if (
+          pages[i].back &&
+          pages[i].back.startsWith("data:") &&
+          pages[i].back !== "book-back"
+        ) {
+          allPdfContent.push(pages[i].back);
+        }
+      }
+
+      // Use all PDF content except the last one (which will be back cover)
+      const contentForPages = allPdfContent.slice(0, -1);
+
+      // Rebuild pages from remaining content
+      for (let i = 0; i < contentForPages.length; i += 2) {
+        newPages.push({
+          front: contentForPages[i] || "blank-page",
+          back: contentForPages[i + 1] || "blank-page",
+        });
+      }
+
+      // Add final page with back cover (which will use the last PDF page via texture loading logic)
+      if (newPages.length > 1) {
+        const lastPage = newPages[newPages.length - 1];
+        if (lastPage.back === "blank-page") {
+          lastPage.back = "book-back";
+        } else {
+          newPages.push({
+            front: "blank-page",
+            back: "book-back",
+          });
+        }
+      }
+
+      return newPages;
+    }
+    return pages;
+  }, [pages, includeCover]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -364,7 +474,9 @@ export const Book = ({ pages = [], ...props }) => {
 
       if (isMobileScreen) {
         // On mobile: 0.7 when closed, 1.1 when opened
-        const isBookOpened = page > 0 && page < pages.length;
+        const totalPages =
+          includeCover && pages.length > 1 ? renderPages.length : pages.length;
+        const isBookOpened = page > 0 && page < totalPages;
         setScale(isBookOpened ? 1.1 : 0.7);
       } else if (isTablet) {
         setScale(0.85);
@@ -376,7 +488,7 @@ export const Book = ({ pages = [], ...props }) => {
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, [page, pages.length]);
+  }, [page, pages.length, renderPages.length, includeCover]);
 
   // Calculate mobile offset based on current page and focus
   useEffect(() => {
@@ -385,13 +497,14 @@ export const Book = ({ pages = [], ...props }) => {
       let offset = 0;
 
       // Base positioning adjustment for opened book (1.1 scale)
-      const isBookOpened = page > 0 && page < pages.length;
+      const totalPages = renderPages.length;
+      const isBookOpened = page > 0 && page < totalPages;
       const scaleAdjustment = isBookOpened ? 0.15 : 0; // Move right when scaled up
 
       if (page === 0) {
         // Show cover (right page) - shift left to center the right page
         offset = -pageWidth * 0.3;
-      } else if (page === pages.length) {
+      } else if (page === totalPages) {
         // Show back cover (left page) - shift right to center the left page
         offset = pageWidth * 0.3;
       } else {
@@ -409,7 +522,7 @@ export const Book = ({ pages = [], ...props }) => {
     } else {
       setMobileOffset(0);
     }
-  }, [page, pages.length, isMobile, pageFocus]);
+  }, [page, pages.length, isMobile, pageFocus, renderPages.length]);
 
   useEffect(() => {
     let timeout;
@@ -455,14 +568,16 @@ export const Book = ({ pages = [], ...props }) => {
 
   return (
     <group ref={groupRef} rotation-y={-Math.PI / 2} scale={scale}>
-      {[...pages].map((pageData, index) => (
+      {renderPages.map((pageData, index) => (
         <Page
           key={index}
           page={delayedPage}
           number={index}
           opened={delayedPage > index}
-          bookClosed={delayedPage === 0 || delayedPage === pages.length}
-          pages={pages}
+          bookClosed={delayedPage === 0 || delayedPage === renderPages.length}
+          pages={pages} // Keep original pages for texture reference
+          includeCover={includeCover}
+          renderPages={renderPages}
           {...pageData}
         />
       ))}

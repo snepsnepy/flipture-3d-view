@@ -10,6 +10,7 @@ function App() {
   const [pages, setPages] = useState([]);
   const [pdfUrl, setPdfUrl] = useState(null);
   const [flipbookTitle, setFlipbookTitle] = useState("Your Flipbook Title");
+  const [companyName, setCompanyName] = useState("Your Company Name");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -41,6 +42,7 @@ function App() {
       if (data) {
         setPdfUrl(data.pdf_file_url);
         setFlipbookTitle(data.title || "Your Flipbook Title");
+        setCompanyName(data.company_name || "Your Company Name");
       } else {
         throw new Error(`Flipbook with ID "${flipbookId}" not found.`);
       }
@@ -57,18 +59,40 @@ function App() {
   }, []);
 
   return (
-    <PagesProvider pages={pages}>
-      <UI
-        onPagesChange={setPages}
-        pdfUrl={pdfUrl}
-        flipbookTitle={flipbookTitle}
-        loading={loading}
-        error={error}
+    <div className="h-full w-full relative">
+      <div
+        className="absolute inset-0 z-0"
+        style={{
+          background: "radial-gradient(circle at top, #1c1c1c, #000000)",
+        }}
       />
-      <div className="relative w-full h-full">
-        {/* Mobile viewport container */}
-        <div className="md:hidden absolute inset-0 overflow-hidden">
-          <div className="w-full h-full transform scale-110 origin-center">
+      <PagesProvider pages={pages}>
+        <UI
+          onPagesChange={setPages}
+          pdfUrl={pdfUrl}
+          flipbookTitle={flipbookTitle}
+          companyName={companyName}
+          loading={loading}
+          error={error}
+        />
+        <div className="relative w-full h-full">
+          {/* Mobile viewport container */}
+          <div className="md:hidden absolute inset-0 overflow-hidden">
+            <div className="w-full h-full transform scale-110 origin-center">
+              <Canvas shadows camera={{ position: [-0.5, 1, 4], fov: 45 }}>
+                <ScrollControls pages={1} damping={0.1}>
+                  <group position-y={0}>
+                    <Suspense fallback={null}>
+                      <Experience />
+                    </Suspense>
+                  </group>
+                </ScrollControls>
+              </Canvas>
+            </div>
+          </div>
+
+          {/* Desktop/tablet viewport */}
+          <div className="hidden md:block w-full h-full">
             <Canvas shadows camera={{ position: [-0.5, 1, 4], fov: 45 }}>
               <ScrollControls pages={1} damping={0.1}>
                 <group position-y={0}>
@@ -80,21 +104,8 @@ function App() {
             </Canvas>
           </div>
         </div>
-
-        {/* Desktop/tablet viewport */}
-        <div className="hidden md:block w-full h-full">
-          <Canvas shadows camera={{ position: [-0.5, 1, 4], fov: 45 }}>
-            <ScrollControls pages={1} damping={0.1}>
-              <group position-y={0}>
-                <Suspense fallback={null}>
-                  <Experience />
-                </Suspense>
-              </group>
-            </ScrollControls>
-          </Canvas>
-        </div>
-      </div>
-    </PagesProvider>
+      </PagesProvider>
+    </div>
   );
 }
 
