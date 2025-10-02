@@ -5,6 +5,7 @@ export default {
     fontFamily: {
       sans: ["Poppins", "sans-serif"],
       poppins: ["Poppins", "sans-serif"],
+      delight: ["Delight", "sans-serif"],
     },
     extend: {
       fontSize: {

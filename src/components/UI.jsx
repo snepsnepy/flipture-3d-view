@@ -10,6 +10,7 @@ export const UI = ({
   onPagesChange,
   pdfUrl,
   flipbookTitle,
+  companyName,
   loading,
   error,
 }) => {
@@ -249,6 +250,15 @@ export const UI = ({
         </div>
       )}
 
+      {/* Company Name - Top Left Corner */}
+      {isFullyLoaded && (
+        <div className="fixed md:top-6 md:left-6 top-4 left-1/2 transform -translate-x-1/2 md:translate-x-0 z-40 pointer-events-none">
+          <h1 className="font-poppins text-white text-xl md:text-2xl tracking-wide drop-shadow-lg text-center md:text-left">
+            {companyName}
+          </h1>
+        </div>
+      )}
+
       {/* <main
         className={`pointer-events-none select-none z-10 fixed inset-0 flex justify-end flex-col transition-opacity duration-1000 ${
           isFullyLoaded ? "opacity-100" : "opacity-0"
@@ -298,7 +308,7 @@ export const UI = ({
           opacity: isFullyLoaded ? 1 - scrollProgress : 0,
         }}
       >
-        <h1 className="shrink-0 text-white text-4xl lg:text-9xl font-poppins font-semibold pt-4 max-w-[380px] md:max-w-4xl mx-auto">
+        <h1 className="shrink-0 text-white text-4xl lg:text-[150px] leading-[170px] font-delight font-black -tracking-[0.1rem] pt-4 max-w-[380px] md:max-w-4xl mx-auto">
           {flipbookTitle}
         </h1>
       </div>
@@ -349,7 +359,7 @@ export const UI = ({
           </button>
 
           {/* Page Indicator */}
-          <div className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 text-white font-poppins text-sm">
+          <div className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 text-white text-sm">
             {page === 0
               ? "Cover"
               : page === pages.length
