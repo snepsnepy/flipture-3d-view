@@ -15,7 +15,7 @@ import {
   MathUtils,
   TextureLoader,
 } from "three";
-import { pageAtom } from "./UI";
+import { pageAtom, pageFocusAtom } from "./UI";
 import { useFrame } from "@react-three/fiber";
 import { useTexture, useCursor } from "@react-three/drei";
 import { degToRad } from "three/src/math/MathUtils.js";
@@ -278,6 +278,7 @@ const Page = ({
   });
 
   const [_, setPage] = useAtom(pageAtom);
+  const [pageFocus, setPageFocus] = useAtom(pageFocusAtom);
   const [highlighted, setHighlighted] = useState(false);
   useCursor(highlighted);
 
@@ -295,7 +296,44 @@ const Page = ({
       }}
       onClick={(e) => {
         e.stopPropagation();
-        setPage(opened ? number : number + 1);
+
+        // Check if we're on mobile
+        const isMobile = window.innerWidth < 768;
+
+        if (isMobile && opened && page > 0 && page < pages.length) {
+          // On mobile, for opened pages, check if we should focus or turn page
+          const isEvenPage = page % 2 === 0;
+          const isLeftPageVisible = isEvenPage;
+          const isRightPageVisible = !isEvenPage;
+
+          // Determine which page was clicked based on the page number
+          const isClickingLeftPage = number === page - 1;
+          const isClickingRightPage = number === page;
+
+          if (isClickingRightPage && pageFocus === "left") {
+            // Clicking on right page while focused on left - switch focus
+            setPageFocus("right");
+          } else if (isClickingLeftPage && pageFocus === "right") {
+            // Clicking on left page while focused on right - switch focus
+            setPageFocus("left");
+          } else {
+            // Normal page turn
+            const newPage = opened ? number : number + 1;
+            setPage(newPage);
+            // When going forward, start with left focus for new spreads
+            // When going backward (opened && number < page), start with right focus
+            const isGoingBackward = opened && number < page;
+            setPageFocus(isGoingBackward ? "right" : "left");
+          }
+        } else {
+          // Desktop behavior or non-opened pages
+          const newPage = opened ? number : number + 1;
+          setPage(newPage);
+          // When opening from cover (page 0 -> 1), start with right focus
+          // Otherwise reset to left focus for new spreads
+          setPageFocus(page === 0 && newPage === 1 ? "right" : "left");
+        }
+
         setHighlighted(false);
       }}
     >
@@ -310,16 +348,24 @@ const Page = ({
 
 export const Book = ({ pages = [], ...props }) => {
   const [page] = useAtom(pageAtom);
+  const [pageFocus] = useAtom(pageFocusAtom);
   const [delayedPage, setDelayedPage] = useState(page);
   const [scale, setScale] = useState(1);
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobileOffset, setMobileOffset] = useState(0);
+  const groupRef = useRef();
 
   useEffect(() => {
     const handleResize = () => {
-      const isMobile = window.innerWidth < 768;
+      const isMobileScreen = window.innerWidth < 768;
       const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
 
-      if (isMobile) {
-        setScale(0.7);
+      setIsMobile(isMobileScreen);
+
+      if (isMobileScreen) {
+        // On mobile: 0.7 when closed, 1.1 when opened
+        const isBookOpened = page > 0 && page < pages.length;
+        setScale(isBookOpened ? 1.1 : 0.7);
       } else if (isTablet) {
         setScale(0.85);
       } else {
@@ -330,7 +376,40 @@ export const Book = ({ pages = [], ...props }) => {
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [page, pages.length]);
+
+  // Calculate mobile offset based on current page and focus
+  useEffect(() => {
+    if (isMobile) {
+      const pageWidth = 1.28; // PAGE_WIDTH
+      let offset = 0;
+
+      // Base positioning adjustment for opened book (1.1 scale)
+      const isBookOpened = page > 0 && page < pages.length;
+      const scaleAdjustment = isBookOpened ? 0.15 : 0; // Move right when scaled up
+
+      if (page === 0) {
+        // Show cover (right page) - shift left to center the right page
+        offset = -pageWidth * 0.3;
+      } else if (page === pages.length) {
+        // Show back cover (left page) - shift right to center the left page
+        offset = pageWidth * 0.3;
+      } else {
+        // For content pages, use focus state to determine which page to show
+        if (pageFocus === "left") {
+          // Focus on left page of the spread
+          offset = pageWidth * 0.3 + scaleAdjustment;
+        } else {
+          // Focus on right page of the spread - needs different adjustment
+          offset = -pageWidth * 0.75 + scaleAdjustment * 2; // More adjustment for right pages
+        }
+      }
+
+      setMobileOffset(offset);
+    } else {
+      setMobileOffset(0);
+    }
+  }, [page, pages.length, isMobile, pageFocus]);
 
   useEffect(() => {
     let timeout;
@@ -360,8 +439,22 @@ export const Book = ({ pages = [], ...props }) => {
     return () => clearTimeout(timeout);
   }, [page]);
 
+  // Smooth position transitions using easing
+  useFrame((_, delta) => {
+    if (groupRef.current) {
+      // Combine external position with mobile offset
+      const targetPosition = [
+        (props.position?.[0] || 0) + mobileOffset,
+        props.position?.[1] || 0,
+        props.position?.[2] || 0,
+      ];
+
+      easing.damp3(groupRef.current.position, targetPosition, 0.25, delta);
+    }
+  });
+
   return (
-    <group {...props} rotation-y={-Math.PI / 2} scale={scale}>
+    <group ref={groupRef} rotation-y={-Math.PI / 2} scale={scale}>
       {[...pages].map((pageData, index) => (
         <Page
           key={index}
