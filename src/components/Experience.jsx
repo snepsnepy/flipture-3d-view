@@ -73,12 +73,12 @@ export const Experience = () => {
   return (
     <>
       <Book pages={pages} position={bookPosition} />
-      {/* <OrbitControls
+      <OrbitControls
         maxDistance={8}
         minDistance={2}
         maxPolarAngle={Math.PI / 1.5}
         minPolarAngle={Math.PI / 3}
-      /> */}
+      />
       <Environment preset="city"></Environment>
       <directionalLight
         position={[2, 5, 2]}

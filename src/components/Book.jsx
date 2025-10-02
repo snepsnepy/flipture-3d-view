@@ -23,13 +23,13 @@ import { degToRad } from "three/src/math/MathUtils.js";
 const easingFactor = 0.5; // Controls the speed of the easing;
 const easingFactorFold = 0.3; // Controls the speed of the fold easing;
 const insideCurveStrenght = 0.18; // Controls the strength of the inside curve;
-const outsideCurveStrength = 0.05; // Controls the strength of the outside curve;
+const outsideCurveStrength = -0.002; // Controls the strength of the outside curve;
 const turningCurveStrength = 0.09; // Controls the strength of the turning curve;
 
 const PAGE_WIDTH = 1.28;
 const PAGE_HEIGHT = 1.71; // 4:3 Aspect Ratio
 const PAGE_DEPTH = 0.003;
-const PAGE_SEGMENTS = 30;
+const PAGE_SEGMENTS = 40;
 const SEGMENT_WIDTH = PAGE_WIDTH / PAGE_SEGMENTS;
 
 const pageGeometry = new BoxGeometry(
@@ -234,7 +234,7 @@ const Page = ({
       const target = i === 0 ? group.current : bones[i];
 
       const insideCurveIntensity = i < 8 ? Math.sin(i * 0.2 + 0.25) : 0;
-      const outsideCurveIntensity = i >= 8 ? Math.cos(i * 0.3 + 0.09) : 0;
+      const outsideCurveIntensity = i >= 8 ? Math.cos(i * 0.1 + 0.35) : 0;
       const turningIntensity =
         Math.sin(i * Math.PI * (1 / bones.length)) * turningTime;
 
@@ -264,7 +264,7 @@ const Page = ({
 
       const foldIntensity =
         i > 8
-          ? Math.sin(i * Math.PI * (1 / bones.length) - 0.5) * turningTime
+          ? Math.sin(i * Math.PI * (1 / bones.length) - 0.3) * turningTime // Adjusted offset for 40 segments
           : 0;
 
       easing.dampAngle(
