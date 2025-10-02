@@ -65,15 +65,35 @@ function App() {
         loading={loading}
         error={error}
       />
-      <Canvas shadows camera={{ position: [-0.5, 1, 4], fov: 45 }}>
-        <ScrollControls pages={1} damping={0.1}>
-          <group position-y={0}>
-            <Suspense fallback={null}>
-              <Experience />
-            </Suspense>
-          </group>
-        </ScrollControls>
-      </Canvas>
+      <div className="relative w-full h-full">
+        {/* Mobile viewport container */}
+        <div className="md:hidden absolute inset-0 overflow-hidden">
+          <div className="w-full h-full transform scale-110 origin-center">
+            <Canvas shadows camera={{ position: [-0.5, 1, 4], fov: 45 }}>
+              <ScrollControls pages={1} damping={0.1}>
+                <group position-y={0}>
+                  <Suspense fallback={null}>
+                    <Experience />
+                  </Suspense>
+                </group>
+              </ScrollControls>
+            </Canvas>
+          </div>
+        </div>
+
+        {/* Desktop/tablet viewport */}
+        <div className="hidden md:block w-full h-full">
+          <Canvas shadows camera={{ position: [-0.5, 1, 4], fov: 45 }}>
+            <ScrollControls pages={1} damping={0.1}>
+              <group position-y={0}>
+                <Suspense fallback={null}>
+                  <Experience />
+                </Suspense>
+              </group>
+            </ScrollControls>
+          </Canvas>
+        </div>
+      </div>
     </PagesProvider>
   );
 }

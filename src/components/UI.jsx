@@ -4,6 +4,7 @@ import { PDFtoIMG } from "../utils/pdfUtils";
 
 export const pageAtom = atom(0);
 export const scrollProgressAtom = atom(0);
+export const pageFocusAtom = atom("right"); // "left" or "right" - which page of the spread is focused
 
 export const UI = ({
   onPagesChange,
@@ -13,6 +14,7 @@ export const UI = ({
   error,
 }) => {
   const [page, setPage] = useAtom(pageAtom);
+  const [pageFocus, setPageFocus] = useAtom(pageFocusAtom);
   const [scrollProgress] = useAtom(scrollProgressAtom);
   const [pdfImages, setPdfImages] = useState([]);
   const [conversionProgress, setConversionProgress] = useState({
@@ -296,10 +298,104 @@ export const UI = ({
           opacity: isFullyLoaded ? 1 - scrollProgress : 0,
         }}
       >
-        <h1 className="shrink-0 text-white text-5xl lg:text-9xl font-poppins font-semibold pt-4 max-w-4xl mx-auto">
+        <h1 className="shrink-0 text-white text-4xl lg:text-9xl font-poppins font-semibold pt-4 max-w-[380px] md:max-w-4xl mx-auto">
           {flipbookTitle}
         </h1>
       </div>
+
+      {/* Mobile Navigation Controls */}
+      {isFullyLoaded && (
+        <div
+          className="md:hidden fixed bottom-8 left-0 right-0 flex justify-center items-center gap-4 px-4 z-20 transition-opacity duration-500"
+          style={{
+            opacity: scrollProgress, // Show when book is centered (scrollProgress increases)
+          }}
+        >
+          {/* Previous Page Button */}
+          <button
+            onClick={() => {
+              // Check if we're in focus mode and can switch focus instead of turning page
+              if (page > 0 && page < pages.length && pageFocus === "right") {
+                // Switch focus to left page instead of turning page
+                setPageFocus("left");
+              } else {
+                // Normal previous page behavior
+                const newPage = Math.max(0, page - 1);
+                setPage(newPage);
+                // When going back: cover gets "right", other pages get "right" (to show the last page of the spread)
+                setPageFocus(newPage === 0 ? "right" : "right");
+              }
+            }}
+            disabled={page === 0 && pageFocus === "left"}
+            className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${
+              page === 0 && pageFocus === "left"
+                ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                : "bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 active:scale-95"
+            }`}
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
+
+          {/* Page Indicator */}
+          <div className="bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 text-white font-poppins text-sm">
+            {page === 0
+              ? "Cover"
+              : page === pages.length
+              ? "Back"
+              : `Page ${page}${pageFocus === "right" ? "R" : "L"}`}
+          </div>
+
+          {/* Next Page Button */}
+          <button
+            onClick={() => {
+              // Check if we're in focus mode and can switch focus instead of turning page
+              if (page > 0 && page < pages.length && pageFocus === "left") {
+                // Switch focus to right page instead of turning page
+                setPageFocus("right");
+              } else {
+                // Normal next page behavior
+                const newPage = Math.min(pages.length, page + 1);
+                setPage(newPage);
+                // When opening from cover (page 0 -> 1), start with right focus
+                // Otherwise reset to left focus for new spreads
+                setPageFocus(page === 0 && newPage === 1 ? "right" : "left");
+              }
+            }}
+            disabled={page === pages.length && pageFocus === "right"}
+            className={`flex items-center justify-center w-12 h-12 rounded-full transition-all duration-300 ${
+              page === pages.length && pageFocus === "right"
+                ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                : "bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 active:scale-95"
+            }`}
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </button>
+        </div>
+      )}
     </>
   );
 };

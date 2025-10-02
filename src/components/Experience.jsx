@@ -19,15 +19,19 @@ export const Experience = () => {
   const isBookOpened = page > 0;
   const { camera, viewport } = useThree();
   const [bookPosition, setBookPosition] = useState([0, -1.9, 0]);
+  const [isMobile, setIsMobile] = useState(false);
   const scroll = useScroll();
 
   // Responsive camera positioning
   useEffect(() => {
     const handleResize = () => {
-      const isMobile = window.innerWidth < 768;
+      const isMobileScreen = window.innerWidth < 768;
       const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
 
-      if (isMobile) {
+      setIsMobile(isMobileScreen);
+
+      // Keep camera positioning consistent across all devices
+      if (isMobileScreen) {
         camera.position.set(0, 0, 4);
         camera.lookAt(0, 0, 0);
       } else if (isTablet) {
@@ -61,6 +65,7 @@ export const Experience = () => {
       // Interpolate Y position based on scroll progress
       const currentY = MathUtils.lerp(initialY, targetY, scrollProgress);
 
+      // Keep book centered - mobile offset is handled in Book component
       setBookPosition([0, currentY, 0]);
     }
   });
