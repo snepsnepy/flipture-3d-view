@@ -3,6 +3,7 @@ import { atom, useAtom } from "jotai";
 import { PDFtoIMG } from "../utils/pdfUtils";
 
 export const pageAtom = atom(0);
+export const scrollProgressAtom = atom(0);
 
 export const UI = ({
   onPagesChange,
@@ -12,6 +13,7 @@ export const UI = ({
   error,
 }) => {
   const [page, setPage] = useAtom(pageAtom);
+  const [scrollProgress] = useAtom(scrollProgressAtom);
   const [pdfImages, setPdfImages] = useState([]);
   const [conversionProgress, setConversionProgress] = useState({
     completed: 0,
@@ -245,7 +247,7 @@ export const UI = ({
         </div>
       )}
 
-      <main
+      {/* <main
         className={`pointer-events-none select-none z-10 fixed inset-0 flex justify-end flex-col transition-opacity duration-1000 ${
           isFullyLoaded ? "opacity-100" : "opacity-0"
         }`}
@@ -284,14 +286,17 @@ export const UI = ({
             )}
           </div>
         </div>
-      </main>
+      </main> */}
 
       <div
-        className={`fixed items-center select-none w-full text-center transition-opacity duration-1000 ${
+        className={`fixed inset-0 flex items-center justify-center select-none text-center ${
           isFullyLoaded ? "opacity-100" : "opacity-0"
         }`}
+        style={{
+          opacity: isFullyLoaded ? 1 - scrollProgress : 0,
+        }}
       >
-        <h1 className="shrink-0 text-white text-5xl lg:text-9xl font-poppins font-semibold pt-4">
+        <h1 className="shrink-0 text-white text-5xl lg:text-9xl font-poppins font-semibold pt-4 max-w-4xl mx-auto">
           {flipbookTitle}
         </h1>
       </div>

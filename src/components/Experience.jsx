@@ -1,16 +1,25 @@
-import { Environment, OrbitControls, Float } from "@react-three/drei";
+import {
+  Environment,
+  OrbitControls,
+  Float,
+  useScroll,
+} from "@react-three/drei";
 import { Book } from "./Book";
 import { useAtom } from "jotai";
-import { pageAtom } from "./UI";
-import { useEffect } from "react";
-import { useThree } from "@react-three/fiber";
+import { pageAtom, scrollProgressAtom } from "./UI";
+import { useEffect, useState } from "react";
+import { useThree, useFrame } from "@react-three/fiber";
 import { usePages } from "../contexts/PagesContext";
+import { MathUtils } from "three";
 
 export const Experience = () => {
   const [page] = useAtom(pageAtom);
+  const [, setScrollProgress] = useAtom(scrollProgressAtom);
   const { pages } = usePages();
   const isBookOpened = page > 0;
   const { camera, viewport } = useThree();
+  const [bookPosition, setBookPosition] = useState([0, -1.9, 0]);
+  const scroll = useScroll();
 
   // Responsive camera positioning
   useEffect(() => {
@@ -35,15 +44,36 @@ export const Experience = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, [camera]);
 
+  // Handle scroll-based book positioning
+  useFrame(() => {
+    if (scroll) {
+      // Get scroll progress (0 to 1)
+      const scrollProgress = scroll.offset;
+
+      // Update scroll progress atom for UI components
+      setScrollProgress(scrollProgress);
+
+      // Initial position: [0, -1.9, 0]
+      // Target position: [0, 0, 0] (centered on Y-axis)
+      const initialY = -1.9;
+      const targetY = 0;
+
+      // Interpolate Y position based on scroll progress
+      const currentY = MathUtils.lerp(initialY, targetY, scrollProgress);
+
+      setBookPosition([0, currentY, 0]);
+    }
+  });
+
   return (
     <>
-      <Book pages={pages} />
-      <OrbitControls
+      <Book pages={pages} position={bookPosition} />
+      {/* <OrbitControls
         maxDistance={8}
         minDistance={2}
         maxPolarAngle={Math.PI / 1.5}
         minPolarAngle={Math.PI / 3}
-      />
+      /> */}
       <Environment preset="city"></Environment>
       <directionalLight
         position={[2, 5, 2]}
