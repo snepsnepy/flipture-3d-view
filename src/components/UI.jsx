@@ -278,7 +278,7 @@ export const UI = ({
       )}
 
       <div
-        className={`fixed inset-0 flex items-center justify-center select-none text-center flex-col gap-2 ${
+        className={`fixed inset-0 flex items-center justify-center select-none text-center flex-col gap-4 ${
           isFullyLoaded ? "opacity-100" : "opacity-0"
         }`}
         style={{
@@ -286,7 +286,7 @@ export const UI = ({
         }}
       >
         {/* FLIPBOOK TITLE */}
-        <h1 className="shrink-0 text-white text-4xl leading-3 md:text-[150px] md:leading-[130px] font-delight font-black -tracking-[0.1rem] pt-4 max-w-[380px] md:max-w-4xl mx-auto">
+        <h1 className="shrink-0 text-white text-4xl leading-3 md:text-[150px] md:leading-[150px] font-delight font-black -tracking-[0.1rem] pt-4 max-w-[380px] md:max-w-4xl mx-auto">
           {flipbookTitle}
         </h1>
 
@@ -294,7 +294,9 @@ export const UI = ({
         <div className="mt-4 flex flex-row items-center gap-x-2">
           <p className="text-white text-xs md:text-sm leading-3 font-poppins tracking-wide">
             <span className="md:hidden">Swipe up to start reading</span>
-            <span className="hidden md:inline">Scroll up to start reading</span>
+            <span className="hidden md:inline">
+              Scroll down to start reading
+            </span>
           </p>
           <div className="flex flex-row items-center gap-x-2 ">
             <svg
@@ -320,14 +322,14 @@ export const UI = ({
               <g
                 fill="none"
                 stroke="#fff"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
               >
                 <path
-                  strokeDasharray="20"
-                  strokeDashoffset="20"
-                  d="M12 21l0 -17.5"
+                  stroke-dasharray="20"
+                  stroke-dashoffset="20"
+                  d="M12 3l0 17.5"
                 >
                   <animate
                     fill="freeze"
@@ -337,9 +339,9 @@ export const UI = ({
                   />
                 </path>
                 <path
-                  strokeDasharray="12"
-                  strokeDashoffset="12"
-                  d="M12 3l7 7M12 3l-7 7"
+                  stroke-dasharray="12"
+                  stroke-dashoffset="12"
+                  d="M12 21l7 -7M12 21l-7 -7"
                 >
                   <animate
                     fill="freeze"
