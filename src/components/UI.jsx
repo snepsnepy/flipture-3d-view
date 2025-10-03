@@ -25,6 +25,7 @@ export const UI = ({
   const [isConverting, setIsConverting] = useState(false);
   const [conversionError, setConversionError] = useState(null);
   const [isFullyLoaded, setIsFullyLoaded] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Create pages array based on pdfImages
   const pages = React.useMemo(() => {
@@ -82,6 +83,18 @@ export const UI = ({
       onPagesChange(pages);
     }
   }, [pages, onPagesChange]);
+
+  // Check if device is mobile
+  React.useEffect(() => {
+    const checkIsMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkIsMobile();
+    window.addEventListener("resize", checkIsMobile);
+
+    return () => window.removeEventListener("resize", checkIsMobile);
+  }, []);
 
   // Mark as fully loaded when pages are ready and give a small delay for smooth transition
   React.useEffect(() => {
@@ -252,53 +265,17 @@ export const UI = ({
 
       {/* Company Name - Top Left Corner */}
       {isFullyLoaded && (
-        <div className="fixed md:top-6 md:left-6 top-4 left-1/2 transform -translate-x-1/2 md:translate-x-0 z-40 pointer-events-none">
+        <div
+          className="fixed md:top-6 md:left-6 top-4 left-1/2 transform -translate-x-1/2 md:translate-x-0 z-40 pointer-events-none"
+          style={{
+            opacity: isMobile ? 1 - scrollProgress : 1,
+          }}
+        >
           <h1 className="font-poppins text-white text-base leading-4 md:text-2xl tracking-wide drop-shadow-lg text-center md:text-left">
             {companyName}
           </h1>
         </div>
       )}
-
-      {/* <main
-        className={`pointer-events-none select-none z-10 fixed inset-0 flex justify-end flex-col transition-opacity duration-1000 ${
-          isFullyLoaded ? "opacity-100" : "opacity-0"
-        }`}
-      >
-        <div className="w-full overflow-auto pointer-events-auto flex justify-center">
-          <div className="overflow-auto flex items-center gap-2 sm:gap-4 max-w-full p-4 lg:p-10">
-            {pages.length > 0 &&
-              [...pages].map((_, index) => (
-                <button
-                  key={index}
-                  className={`whitespace-nowrap py-2 lg:py-3 px-6 lg:px-8 border border-white rounded-full text-white hover:cursor-pointer hover:text-white font-poppins text-base lg:text-lg tracking-wide hover:scale-105 transition-all duration-300 ${
-                    index === page
-                      ? "bg-white !text-black "
-                      : "bg-black/30 text-white"
-                  }`}
-                  onClick={() => setPage(index)}
-                >
-                  {index === 0
-                    ? "Cover"
-                    : index === 1
-                    ? "Page 1"
-                    : `Page ${index}`}
-                </button>
-              ))}
-            {pages.length > 0 && (
-              <button
-                className={`whitespace-nowrap py-2 lg:py-3 px-6 lg:px-8 border border-white rounded-full text-white hover:cursor-pointer hover:text-white font-poppins  text-base lg:text-lg tracking-wide hover:scale-105 transition-all duration-300 ${
-                  page === pages.length
-                    ? "bg-white !text-black "
-                    : "bg-black/30 text-white"
-                }`}
-                onClick={() => setPage(pages.length)}
-              >
-                Back Cover
-              </button>
-            )}
-          </div>
-        </div>
-      </main> */}
 
       <div
         className={`fixed inset-0 flex items-center justify-center select-none text-center flex-col gap-2 ${
