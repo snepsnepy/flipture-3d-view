@@ -253,7 +253,7 @@ export const UI = ({
       {/* Company Name - Top Left Corner */}
       {isFullyLoaded && (
         <div className="fixed md:top-6 md:left-6 top-4 left-1/2 transform -translate-x-1/2 md:translate-x-0 z-40 pointer-events-none">
-          <h1 className="font-poppins text-white text-xl md:text-2xl tracking-wide drop-shadow-lg text-center md:text-left">
+          <h1 className="font-poppins text-white text-base leading-4 md:text-2xl tracking-wide drop-shadow-lg text-center md:text-left">
             {companyName}
           </h1>
         </div>
@@ -301,16 +301,81 @@ export const UI = ({
       </main> */}
 
       <div
-        className={`fixed inset-0 flex items-center justify-center select-none text-center ${
+        className={`fixed inset-0 flex items-center justify-center select-none text-center flex-col gap-2 ${
           isFullyLoaded ? "opacity-100" : "opacity-0"
         }`}
         style={{
           opacity: isFullyLoaded ? 1 - scrollProgress : 0,
         }}
       >
-        <h1 className="shrink-0 text-white text-4xl lg:text-[150px] leading-[170px] font-delight font-black -tracking-[0.1rem] pt-4 max-w-[380px] md:max-w-4xl mx-auto">
+        {/* FLIPBOOK TITLE */}
+        <h1 className="shrink-0 text-white text-4xl leading-3 md:text-[150px] md:leading-[130px] font-delight font-black -tracking-[0.1rem] pt-4 max-w-[380px] md:max-w-4xl mx-auto">
           {flipbookTitle}
         </h1>
+
+        {/* CTA */}
+        <div className="mt-4 flex flex-row items-center gap-x-2">
+          <p className="text-white text-xs md:text-sm leading-3 font-poppins tracking-wide">
+            <span className="md:hidden">Swipe up to start reading</span>
+            <span className="hidden md:inline">Scroll up to start reading</span>
+          </p>
+          <div className="flex flex-row items-center gap-x-2 ">
+            <svg
+              className="animate-bounce md:hidden"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+            >
+              <path
+                fill="#fff"
+                d="M5.325 3.95q-.175.625-.25 1.263T5 6.5q0 1.575.45 3.038t1.3 2.762q.2.275.175.6t-.25.55t-.525.2t-.5-.3q-1.05-1.5-1.6-3.25T3.5 6.5q0-.675.075-1.35T3.8 3.8L2.575 5.025q-.225.225-.525.225t-.525-.225T1.3 4.5t.225-.525L3.8 1.7q.3-.3.7-.3t.7.3l2.275 2.275Q7.7 4.2 7.7 4.5t-.225.525t-.525.213t-.525-.213zM16.45 20.825q-.575.2-1.162.188t-1.138-.288L8.5 18.1q-.375-.175-.525-.562T8 16.775l.05-.1q.25-.5.7-.812t1-.363l1.7-.125L8.65 7.7q-.15-.4.025-.763t.575-.512t.762.025t.513.575l3.25 8.925q.175.475-.1.888t-.775.462l-1.175.075L15 18.9q.175.075.375.088t.375-.038l3.925-1.425q.775-.275 1.125-1.038t.075-1.537L19.5 11.2q-.15-.4.025-.763t.575-.512t.762.025t.513.575l1.375 3.75q.575 1.575-.113 3.062T20.375 19.4zm-3-11.675q.4-.15.763.025t.512.575l1.025 2.8q.15.4-.025.775t-.575.525t-.775-.025t-.525-.575l-1-2.825q-.15-.4.025-.763t.575-.512m3.15-.075q.4-.15.763.025t.512.575l.675 1.875q.15.4-.012.763t-.563.512t-.775-.025t-.525-.575L16 10.35q-.15-.4.025-.762t.575-.513m.375 6.05"
+              />
+            </svg>
+
+            <svg
+              className="hidden md:block animate-bounce"
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+            >
+              <g
+                fill="none"
+                stroke="#fff"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+              >
+                <path
+                  strokeDasharray="20"
+                  strokeDashoffset="20"
+                  d="M12 21l0 -17.5"
+                >
+                  <animate
+                    fill="freeze"
+                    attributeName="stroke-dashoffset"
+                    dur="0.2s"
+                    values="20;0"
+                  />
+                </path>
+                <path
+                  strokeDasharray="12"
+                  strokeDashoffset="12"
+                  d="M12 3l7 7M12 3l-7 7"
+                >
+                  <animate
+                    fill="freeze"
+                    attributeName="stroke-dashoffset"
+                    begin="0.2s"
+                    dur="0.2s"
+                    values="12;0"
+                  />
+                </path>
+              </g>
+            </svg>
+          </div>
+        </div>
       </div>
 
       {/* Mobile Navigation Controls */}
