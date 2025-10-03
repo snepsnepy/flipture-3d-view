@@ -38,7 +38,7 @@ export const Experience = () => {
         camera.position.set(0, 0, 3.5);
         camera.lookAt(0, 0, 0);
       } else {
-        camera.position.set(0, 0, 3);
+        camera.position.set(0, 0, 2.5);
         camera.lookAt(0, 0, 0);
       }
     };
@@ -59,7 +59,7 @@ export const Experience = () => {
 
       // Initial position: [0, -1.9, 0]
       // Target position: [0, 0, 0] (centered on Y-axis)
-      const initialY = -1.9;
+      const initialY = -1.6;
       const targetY = 0;
 
       // Interpolate Y position based on scroll progress
