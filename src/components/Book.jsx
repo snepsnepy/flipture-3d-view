@@ -501,12 +501,10 @@ export const Book = ({ pages = [], includeCover = false, ...props }) => {
       const isBookOpened = page > 0 && page < totalPages;
       const scaleAdjustment = isBookOpened ? 0.15 : 0; // Move right when scaled up
 
-      if (page === 0) {
-        // Show cover (right page) - shift left to center the right page
-        offset = -pageWidth * 0.3;
-      } else if (page === totalPages) {
-        // Show back cover (left page) - shift right to center the left page
-        offset = pageWidth * 0.3;
+      if (page === 0 || page === totalPages) {
+        // Book is closed (cover or back cover) - no mobile offset needed
+        // The centering is handled by xOffset in Experience.jsx
+        offset = 0;
       } else {
         // For content pages, use focus state to determine which page to show
         if (pageFocus === "left") {

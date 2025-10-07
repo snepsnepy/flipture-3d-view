@@ -277,6 +277,36 @@ export const UI = ({
         </div>
       )}
 
+      {/* Back to Start Button - Top Right Corner */}
+      {isFullyLoaded && page > 0 && (
+        <button
+          onClick={() => {
+            setPage(0);
+            setPageFocus("right");
+          }}
+          className="fixed top-4 right-4 md:top-6 md:right-6 z-40 bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 active:scale-95 rounded-full px-4 py-2 md:px-5 md:py-3 transition-all duration-300 flex items-center gap-2 group shadow-lg pointer-events-auto"
+          style={{
+            opacity: isMobile ? scrollProgress : 1,
+          }}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 512 512"
+          >
+            <path
+              fill="#fff"
+              fillRule="evenodd"
+              d="M426.667 106.667v42.666L358 149.33c36.077 31.659 58.188 77.991 58.146 128.474c-.065 78.179-53.242 146.318-129.062 165.376s-154.896-15.838-191.92-84.695C58.141 289.63 72.637 204.42 130.347 151.68a85.33 85.33 0 0 0 33.28 30.507a124.59 124.59 0 0 0-46.294 97.066c1.05 69.942 58.051 126.088 128 126.08c64.072 1.056 118.71-46.195 126.906-109.749c6.124-47.483-15.135-92.74-52.236-118.947L320 256h-42.667V106.667zM202.667 64c23.564 0 42.666 19.103 42.666 42.667s-19.102 42.666-42.666 42.666S160 130.231 160 106.667S179.103 64 202.667 64"
+            />
+          </svg>
+          <span className="text-sm md:text-base font-medium hidden md:inline">
+            Rewind
+          </span>
+        </button>
+      )}
+
       <div
         className={`fixed inset-0 flex items-center justify-center select-none text-center flex-col gap-4 ${
           isFullyLoaded ? "opacity-100" : "opacity-0"
@@ -322,30 +352,30 @@ export const UI = ({
               <g
                 fill="none"
                 stroke="#fff"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
               >
                 <path
-                  stroke-dasharray="20"
-                  stroke-dashoffset="20"
+                  strokeDasharray="20"
+                  strokeDashoffset="20"
                   d="M12 3l0 17.5"
                 >
                   <animate
                     fill="freeze"
-                    attributeName="stroke-dashoffset"
+                    attributeName="strokeDashoffset"
                     dur="0.2s"
                     values="20;0"
                   />
                 </path>
                 <path
-                  stroke-dasharray="12"
-                  stroke-dashoffset="12"
+                  strokeDasharray="12"
+                  strokeDashoffset="12"
                   d="M12 21l7 -7M12 21l-7 -7"
                 >
                   <animate
                     fill="freeze"
-                    attributeName="stroke-dashoffset"
+                    attributeName="strokeDashoffset"
                     begin="0.2s"
                     dur="0.2s"
                     values="12;0"

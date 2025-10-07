@@ -20,19 +20,22 @@ export const Experience = () => {
   const { camera, viewport } = useThree();
   const [bookPosition, setBookPosition] = useState([0, -1.9, 0]);
   const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
   const scroll = useScroll();
 
   // Responsive camera positioning
   useEffect(() => {
     const handleResize = () => {
       const isMobileScreen = window.innerWidth < 768;
-      const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
+      const isTabletScreen =
+        window.innerWidth >= 768 && window.innerWidth < 1024;
 
       setIsMobile(isMobileScreen);
+      setIsTablet(isTabletScreen);
 
       // Keep camera positioning consistent across all devices
       if (isMobileScreen) {
-        camera.position.set(0, 0, 4);
+        camera.position.set(0, 0, 4.3);
         camera.lookAt(0, 0, 0);
       } else if (isTablet) {
         camera.position.set(0, 0, 3.5);
@@ -63,10 +66,32 @@ export const Experience = () => {
       const targetY = 0;
 
       // Interpolate Y position based on scroll progress
-      const currentY = MathUtils.lerp(initialY, targetY, scrollProgress);
+      let currentY = MathUtils.lerp(initialY, targetY, scrollProgress);
 
-      // Keep book centered - mobile offset is handled in Book component
-      setBookPosition([0, currentY, 0]);
+      // On mobile, when book is opened, move it up a bit
+      if (isMobile && isBookOpened) {
+        currentY += 0.2; // Adjust this value to move book higher or lower
+      }
+
+      // When book is closed (page 0), shift it to center the closed book
+      // When open, keep it at 0 so the spine is centered
+      // PAGE_WIDTH is 1.28, and after rotation, we need to offset in X
+      // Calculate offset based on viewport and book scale
+      let xOffset = 0;
+      if (!isBookOpened) {
+        if (isMobile) {
+          // Mobile: scale 0.7, adjust offset proportionally
+          xOffset = -0.64 * 0.8;
+        } else if (isTablet) {
+          // Tablet: scale 0.85, adjust offset proportionally
+          xOffset = -0.64 * 0.85;
+        } else {
+          // Desktop: scale 1
+          xOffset = -0.64;
+        }
+      }
+
+      setBookPosition([xOffset, currentY, 0]);
     }
   });
 
