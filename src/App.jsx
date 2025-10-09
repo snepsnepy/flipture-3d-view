@@ -11,6 +11,7 @@ function App() {
   const [pdfUrl, setPdfUrl] = useState(null);
   const [flipbookTitle, setFlipbookTitle] = useState("Your Flipbook Title");
   const [companyName, setCompanyName] = useState("Your Company Name");
+  const [coverOptions, setCoverOptions] = useState("default");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -43,6 +44,7 @@ function App() {
         setPdfUrl(data.pdf_file_url);
         setFlipbookTitle(data.title || "Your Flipbook Title");
         setCompanyName(data.company_name || "Your Company Name");
+        setCoverOptions(data.cover_options || "default");
       } else {
         throw new Error(`Flipbook with ID "${flipbookId}" not found.`);
       }
@@ -83,7 +85,7 @@ function App() {
                 <ScrollControls pages={1} damping={0.1}>
                   <group position-y={0}>
                     <Suspense fallback={null}>
-                      <Experience />
+                      <Experience coverOptions={coverOptions} />
                     </Suspense>
                   </group>
                 </ScrollControls>
@@ -97,7 +99,7 @@ function App() {
               <ScrollControls pages={1} damping={0.1}>
                 <group position-y={0}>
                   <Suspense fallback={null}>
-                    <Experience />
+                    <Experience coverOptions={coverOptions} />
                   </Suspense>
                 </group>
               </ScrollControls>
