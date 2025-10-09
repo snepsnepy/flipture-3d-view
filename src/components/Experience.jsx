@@ -12,7 +12,7 @@ import { useThree, useFrame } from "@react-three/fiber";
 import { usePages } from "../contexts/PagesContext";
 import { MathUtils } from "three";
 
-export const Experience = () => {
+export const Experience = ({ coverOptions = "default" }) => {
   const [page] = useAtom(pageAtom);
   const [, setScrollProgress] = useAtom(scrollProgressAtom);
   const { pages } = usePages();
@@ -97,7 +97,7 @@ export const Experience = () => {
 
   return (
     <>
-      <Book pages={pages} position={bookPosition} includeCover={true} />
+      <Book pages={pages} position={bookPosition} cover={coverOptions} />
       {/* <OrbitControls
         maxDistance={8}
         minDistance={2}

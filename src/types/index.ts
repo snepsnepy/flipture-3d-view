@@ -7,6 +7,7 @@ export type Flipbook = {
   pdf_file_url: string | null;
   pdf_file_name: string | null;
   pdf_file_size: number | null;
+  cover_options: string;
   user_id: string;
 };
 
@@ -22,6 +23,7 @@ export interface Database {
           pdf_file_url: string | null;
           pdf_file_name: string | null;
           pdf_file_size: number | null;
+          cover_options: string;
           user_id: string;
           created_at: string;
           updated_at: string;
@@ -34,6 +36,7 @@ export interface Database {
           pdf_file_url?: string | null;
           pdf_file_name?: string | null;
           pdf_file_size?: number | null;
+          cover_options?: string;
           user_id: string;
           created_at?: string;
           updated_at?: string;
@@ -46,6 +49,7 @@ export interface Database {
           pdf_file_url?: string | null;
           pdf_file_name?: string | null;
           pdf_file_size?: number | null;
+          cover_options?: string;
           user_id?: string;
           created_at?: string;
           updated_at?: string;
