@@ -13,6 +13,7 @@ export const UI = ({
   companyName,
   loading,
   error,
+  backgroundStyle = "background-blue",
 }) => {
   const [page, setPage] = useAtom(pageAtom);
   const [pageFocus, setPageFocus] = useAtom(pageFocusAtom);
@@ -148,11 +149,27 @@ export const UI = ({
     }
   }, [pdfUrl, loading]);
 
+  const getBackgroundClass = (style) => {
+    const backgroundMap = {
+      "background-red": "bg-gradient-to-br from-red-600 to-red-900",
+      "background-blue": "bg-gradient-to-br from-[#1488CC] to-[#0046FF]",
+      "background-green": "bg-gradient-to-br from-green-600 to-green-900",
+      "background-purple": "bg-gradient-to-br from-purple-600 to-purple-900",
+      "background-orange": "bg-gradient-to-br from-orange-600 to-orange-900",
+      // Add more backgrounds as needed
+    };
+    return backgroundMap[style] || backgroundMap["background-blue"];
+  };
+
   return (
     <>
       {/* Main Loader - Shows until flipbook is fully ready */}
       {(!isFullyLoaded || loading) && (
-        <div className="fixed inset-0 bg-gradient-to-br from-[#0046FF] via-[#001BB7] to-[#000080] flex items-center justify-center z-50">
+        <div
+          className={`fixed inset-0 ${getBackgroundClass(
+            backgroundStyle
+          )} flex items-center justify-center z-50`}
+        >
           <div className="text-center">
             {/* Animated Logo/Icon */}
             <div className="relative mb-8">
@@ -316,12 +333,12 @@ export const UI = ({
         }}
       >
         {/* FLIPBOOK TITLE */}
-        <h1 className="shrink-0 text-white text-4xl leading-3 md:text-[150px] md:leading-[150px] font-delight font-black -tracking-[0.1rem] pt-4 max-w-[380px] md:max-w-4xl mx-auto">
+        <h1 className="shrink-0 text-white px-4 md:px-10 text-4xl leading-8 md:text-[150px] md:leading-[150px] font-delight font-black -tracking-[0.1rem] pt-4 max-w-[380px] md:max-w-6xl mx-auto break-all">
           {flipbookTitle}
         </h1>
 
         {/* CTA */}
-        <div className="mt-4 flex flex-row items-center gap-x-2">
+        <div className=" flex flex-row items-center gap-x-2">
           <p className="text-white text-xs md:text-sm leading-3 font-poppins tracking-wide">
             <span className="md:hidden">Swipe up to start reading</span>
             <span className="hidden md:inline">
@@ -347,41 +364,14 @@ export const UI = ({
               xmlns="http://www.w3.org/2000/svg"
               width="24"
               height="24"
-              viewBox="0 0 24 24"
+              viewBox="0 0 16 16"
             >
-              <g
-                fill="none"
-                stroke="#fff"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-              >
-                <path
-                  strokeDasharray="20"
-                  strokeDashoffset="20"
-                  d="M12 3l0 17.5"
-                >
-                  <animate
-                    fill="freeze"
-                    attributeName="strokeDashoffset"
-                    dur="0.2s"
-                    values="20;0"
-                  />
-                </path>
-                <path
-                  strokeDasharray="12"
-                  strokeDashoffset="12"
-                  d="M12 21l7 -7M12 21l-7 -7"
-                >
-                  <animate
-                    fill="freeze"
-                    attributeName="strokeDashoffset"
-                    begin="0.2s"
-                    dur="0.2s"
-                    values="12;0"
-                  />
-                </path>
-              </g>
+              <path
+                fill="#fff"
+                fillRule="evenodd"
+                d="M10 14a2 2 0 1 1-4 0a2 2 0 0 1 4 0m1.78-8.841a.75.75 0 0 0-1.06 0l-1.97 1.97V.75a.75.75 0 0 0-1.5 0v6.379l-1.97-1.97a.75.75 0 0 0-1.06 1.06l3.25 3.25L8 10l.53-.53l3.25-3.25a.75.75 0 0 0 0-1.061"
+                clipRule="evenodd"
+              />
             </svg>
           </div>
         </div>
