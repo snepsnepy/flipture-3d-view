@@ -12,6 +12,7 @@ function App() {
   const [flipbookTitle, setFlipbookTitle] = useState("Your Flipbook Title");
   const [companyName, setCompanyName] = useState("Your Company Name");
   const [coverOptions, setCoverOptions] = useState("default");
+  const [backgroundStyle, setBackgroundStyle] = useState("background-blue");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -45,6 +46,7 @@ function App() {
         setFlipbookTitle(data.title || "Your Flipbook Title");
         setCompanyName(data.company_name || "Your Company Name");
         setCoverOptions(data.cover_options || "default");
+        setBackgroundStyle(data.background_style || "background-blue");
       } else {
         throw new Error(`Flipbook with ID "${flipbookId}" not found.`);
       }
@@ -60,13 +62,24 @@ function App() {
     getData();
   }, []);
 
+  const getBackgroundClass = (style) => {
+    const backgroundMap = {
+      "background-red": "bg-gradient-to-br from-red-600 to-red-900",
+      "background-blue": "bg-gradient-to-br from-[#1488CC] to-[#0046FF]",
+      "background-green": "bg-gradient-to-br from-green-600 to-green-900",
+      "background-purple": "bg-gradient-to-br from-purple-600 to-purple-900",
+      "background-orange": "bg-gradient-to-br from-orange-600 to-orange-900",
+      // Add more backgrounds as needed
+    };
+    return backgroundMap[style] || backgroundMap["background-blue"];
+  };
+
   return (
     <div className="h-full w-full relative">
       <div
-        className="absolute inset-0 z-0"
-        style={{
-          background: "radial-gradient(circle at top, #1c1c1c, #000000)",
-        }}
+        className={`absolute inset-0 z-0 ${getBackgroundClass(
+          backgroundStyle
+        )}`}
       />
       <PagesProvider pages={pages}>
         <UI
@@ -76,6 +89,7 @@ function App() {
           companyName={companyName}
           loading={loading}
           error={error}
+          backgroundStyle={backgroundStyle}
         />
         <div className="relative w-full h-full">
           {/* Mobile viewport container */}
