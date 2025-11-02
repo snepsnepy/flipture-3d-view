@@ -12,7 +12,7 @@ function App() {
   const [flipbookTitle, setFlipbookTitle] = useState("Your Flipbook Title");
   const [companyName, setCompanyName] = useState("Your Company Name");
   const [coverOptions, setCoverOptions] = useState("default");
-  const [backgroundStyle, setBackgroundStyle] = useState("background-blue");
+  const [backgroundGradient, setBackgroundGradient] = useState("royal-blue");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -44,9 +44,10 @@ function App() {
       if (data) {
         setPdfUrl(data.pdf_file_url);
         setFlipbookTitle(data.title || "Your Flipbook Title");
-        setCompanyName(data.company_name || "Your Company Name");
+        setCompanyName(data.company_name || "");
         setCoverOptions(data.cover_options || "default");
-        setBackgroundStyle(data.background_style || "background-blue");
+        setBackgroundGradient(data.background_gradient || "royal-blue");
+        console.log(data);
       } else {
         throw new Error(`Flipbook with ID "${flipbookId}" not found.`);
       }
@@ -64,21 +65,25 @@ function App() {
 
   const getBackgroundClass = (style) => {
     const backgroundMap = {
-      "background-red": "bg-gradient-to-br from-red-600 to-red-900",
-      "background-blue": "bg-gradient-to-br from-[#1488CC] to-[#0046FF]",
-      "background-green": "bg-gradient-to-br from-green-600 to-green-900",
-      "background-purple": "bg-gradient-to-br from-purple-600 to-purple-900",
-      "background-orange": "bg-gradient-to-br from-orange-600 to-orange-900",
-      // Add more backgrounds as needed
+      "deep-white": "bg-gradient-to-br from-[#FFFFFF] to-[#F0F0F0]",
+      "deep-black": "bg-gradient-to-br from-[#000000] to-[#212121]",
+      "royal-blue":
+        "bg-gradient-to-br from-[#091E3A] via-[#2F80ED] to-[#2D9EE0]",
+      "purple-dream": "bg-gradient-to-br from-[#9400D3] to-[#4B0082]",
+      "sunset-orange": "bg-gradient-to-br from-[#E65C00] to-[#F9D423]",
+      "fire-red": "bg-gradient-to-br from-[#E52D27] to-[#B31217]",
+      "spring-green": "bg-gradient-to-br from-[#ADD100] to-[#7B920A]",
+      "arctic-blue":
+        "bg-gradient-to-br from-[#00F5FF] via-[#00CED1] to-[#20B2AA]",
     };
-    return backgroundMap[style] || backgroundMap["background-blue"];
+    return backgroundMap[style] || backgroundMap["royal-blue"];
   };
 
   return (
     <div className="h-full w-full relative">
       <div
         className={`absolute inset-0 z-0 ${getBackgroundClass(
-          backgroundStyle
+          backgroundGradient
         )}`}
       />
       <PagesProvider pages={pages}>
@@ -89,7 +94,7 @@ function App() {
           companyName={companyName}
           loading={loading}
           error={error}
-          backgroundStyle={backgroundStyle}
+          backgroundGradient={backgroundGradient}
         />
         <div className="relative w-full h-full">
           {/* Mobile viewport container */}

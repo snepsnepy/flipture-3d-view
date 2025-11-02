@@ -13,7 +13,7 @@ export const UI = ({
   companyName,
   loading,
   error,
-  backgroundStyle = "background-blue",
+  backgroundGradient = "royal-blue",
 }) => {
   const [page, setPage] = useAtom(pageAtom);
   const [pageFocus, setPageFocus] = useAtom(pageFocusAtom);
@@ -27,6 +27,11 @@ export const UI = ({
   const [conversionError, setConversionError] = useState(null);
   const [isFullyLoaded, setIsFullyLoaded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+
+  // Smart text breaking: break by spaces if available, otherwise break-all
+  const titleHasSpaces = React.useMemo(() => {
+    return flipbookTitle?.includes(" ") ?? false;
+  }, [flipbookTitle]);
 
   // Create pages array based on pdfImages
   const pages = React.useMemo(() => {
@@ -151,14 +156,18 @@ export const UI = ({
 
   const getBackgroundClass = (style) => {
     const backgroundMap = {
-      "background-red": "bg-gradient-to-br from-red-600 to-red-900",
-      "background-blue": "bg-gradient-to-br from-[#1488CC] to-[#0046FF]",
-      "background-green": "bg-gradient-to-br from-green-600 to-green-900",
-      "background-purple": "bg-gradient-to-br from-purple-600 to-purple-900",
-      "background-orange": "bg-gradient-to-br from-orange-600 to-orange-900",
-      // Add more backgrounds as needed
+      "deep-white": "bg-gradient-to-br from-[#FFFFFF] to-[#F0F0F0]",
+      "deep-black": "bg-gradient-to-br from-[#000000] to-[#212121]",
+      "royal-blue":
+        "bg-gradient-to-br from-[#091E3A] via-[#2F80ED] to-[#2D9EE0]",
+      "purple-dream": "bg-gradient-to-br from-[#9400D3] to-[#4B0082]",
+      "sunset-orange": "bg-gradient-to-br from-[#E65C00] to-[#F9D423]",
+      "fire-red": "bg-gradient-to-br from-[#E52D27] to-[#B31217]",
+      "spring-green": "bg-gradient-to-br from-[#ADD100] to-[#7B920A]",
+      "arctic-blue":
+        "bg-gradient-to-br from-[#00F5FF] via-[#00CED1] to-[#20B2AA]",
     };
-    return backgroundMap[style] || backgroundMap["background-blue"];
+    return backgroundMap[style] || backgroundMap["royal-blue"];
   };
 
   return (
@@ -167,7 +176,7 @@ export const UI = ({
       {(!isFullyLoaded || loading) && (
         <div
           className={`fixed inset-0 ${getBackgroundClass(
-            backgroundStyle
+            backgroundGradient
           )} flex items-center justify-center z-50`}
         >
           <div className="text-center">
@@ -333,7 +342,11 @@ export const UI = ({
         }}
       >
         {/* FLIPBOOK TITLE */}
-        <h1 className="shrink-0 text-white px-4 md:px-10 text-4xl leading-8 md:text-[150px] md:leading-[150px] font-delight font-black -tracking-[0.1rem] pt-4 max-w-[380px] md:max-w-6xl mx-auto break-all">
+        <h1
+          className={`shrink-0 text-white px-4 md:px-10 text-4xl leading-8 md:text-[150px] md:leading-[150px] font-delight font-black -tracking-[0.1rem] pt-4 max-w-[380px] md:max-w-6xl mx-auto ${
+            titleHasSpaces ? "" : "break-all"
+          }`}
+        >
           {flipbookTitle}
         </h1>
 
