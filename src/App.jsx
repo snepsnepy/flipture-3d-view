@@ -1,11 +1,15 @@
 import { Canvas } from "@react-three/fiber";
-import { Suspense, useState, useEffect } from "react";
+import { Suspense, useState, useEffect, useRef } from "react";
 import { ScrollControls } from "@react-three/drei";
 import { Experience } from "./components/Experience";
 import { UI } from "./components/UI";
 import { PagesProvider } from "./contexts/PagesContext";
 import { supabaseClient } from "./utils/supabase";
-import { initGA, trackFlipbookView, trackTimeSpent } from "./utils/googleAnalytics";
+import {
+  initGA,
+  trackFlipbookView,
+  trackTimeSpent,
+} from "./utils/googleAnalytics";
 
 function App() {
   const [pages, setPages] = useState([]);
@@ -18,6 +22,7 @@ function App() {
   const [error, setError] = useState(null);
   const [flipbookId, setFlipbookId] = useState(null);
   const [startTime] = useState(Date.now());
+  const hasTrackedView = useRef(false);
 
   const getData = async () => {
     try {
@@ -72,11 +77,13 @@ function App() {
     initGA();
   }, []);
 
-  // Track flipbook view when loaded
+  // Track flipbook view when loaded (only once)
   useEffect(() => {
-    if (flipbookId && flipbookTitle) {
+    if (flipbookId && flipbookTitle && !hasTrackedView.current) {
       // Google Analytics
+      console.log("Tracking flipbook view:", { flipbookId, flipbookTitle });
       trackFlipbookView(flipbookId, flipbookTitle);
+      hasTrackedView.current = true;
     }
   }, [flipbookId, flipbookTitle]);
 
@@ -87,7 +94,7 @@ function App() {
     const handleBeforeUnload = () => {
       // Calculate time spent
       const timeSpent = Math.floor((Date.now() - startTime) / 1000);
-      
+
       // Google Analytics
       trackTimeSpent(flipbookId, timeSpent);
     };
