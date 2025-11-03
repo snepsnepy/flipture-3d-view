@@ -547,7 +547,7 @@ export const UI = ({
               ? "Cover"
               : page === pages.length
               ? "Back"
-              : `Page ${page}${pageFocus === "right" ? "R" : "L"}`}
+              : `Page ${page}`}
           </div>
 
           {/* Next Page Button */}

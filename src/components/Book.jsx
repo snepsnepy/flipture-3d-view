@@ -541,7 +541,7 @@ export const Book = ({ pages = [], cover = "default", ...props }) => {
     setSmoothZoom(zoom);
   }, []); // Only on mount
 
-  // Calculate mobile offset based on current page and focus
+  // Calculate mobile offset based on current page, focus, and zoom
   useEffect(() => {
     if (isMobile) {
       const pageWidth = 1.28; // PAGE_WIDTH
@@ -558,12 +558,17 @@ export const Book = ({ pages = [], cover = "default", ...props }) => {
         offset = 0;
       } else {
         // For content pages, use focus state to determine which page to show
+        // Apply zoom factor to keep the focused page centered when zooming
+        const zoomFactor = smoothZoom || 1;
+        const baseZoom = 1.1; // Mobile base zoom when opened
+        const zoomAdjustment = (zoomFactor - 1) / baseZoom; // Normalize zoom adjustment
+
         if (pageFocus === "left") {
           // Focus on left page of the spread
-          offset = pageWidth * 0.3 + scaleAdjustment;
+          offset = pageWidth * 0.3 * zoomFactor + scaleAdjustment;
         } else {
           // Focus on right page of the spread - needs different adjustment
-          offset = -pageWidth * 0.75 + scaleAdjustment * 2; // More adjustment for right pages
+          offset = -pageWidth * 0.75 * zoomFactor + scaleAdjustment * 2;
         }
       }
 
@@ -571,7 +576,7 @@ export const Book = ({ pages = [], cover = "default", ...props }) => {
     } else {
       setMobileOffset(0);
     }
-  }, [page, pages.length, isMobile, pageFocus, renderPages.length]);
+  }, [page, pages.length, isMobile, pageFocus, renderPages.length, smoothZoom]);
 
   useEffect(() => {
     let timeout;
