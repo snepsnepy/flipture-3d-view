@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { atom, useAtom } from "jotai";
 import { PDFtoIMG } from "../utils/pdfUtils";
+import { trackPageView, trackZoom } from "../utils/googleAnalytics";
 
 export const pageAtom = atom(0);
 export const scrollProgressAtom = atom(0);
@@ -15,6 +16,7 @@ export const UI = ({
   loading,
   error,
   backgroundGradient = "royal-blue",
+  flipbookId,
 }) => {
   const [page, setPage] = useAtom(pageAtom);
   const [pageFocus, setPageFocus] = useAtom(pageFocusAtom);
@@ -29,6 +31,27 @@ export const UI = ({
   const [conversionError, setConversionError] = useState(null);
   const [isFullyLoaded, setIsFullyLoaded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+
+  // Wrapper functions for tracking
+  const handlePageChange = React.useCallback(
+    (newPage) => {
+      setPage(newPage);
+      if (flipbookId) {
+        trackPageView(flipbookId, newPage); // Google Analytics
+      }
+    },
+    [setPage, flipbookId]
+  );
+
+  const handleZoomChange = React.useCallback(
+    (newZoom, action = "zoom") => {
+      setZoom(newZoom);
+      if (flipbookId) {
+        trackZoom(flipbookId, action, Math.round(newZoom * 100)); // Google Analytics
+      }
+    },
+    [setZoom, flipbookId]
+  );
 
   // Smart text breaking: break by spaces if available, otherwise break-all
   const titleHasSpaces = React.useMemo(() => {
@@ -310,7 +333,7 @@ export const UI = ({
       {isFullyLoaded && page > 0 && (
         <button
           onClick={() => {
-            setPage(0);
+            handlePageChange(0);
             setPageFocus("right");
           }}
           className="fixed top-4 right-4 md:top-6 md:right-6 z-40 bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 active:scale-95 rounded-full px-3 py-2 md:px-4 md:py-3 transition-all duration-300 flex items-center gap-2 group shadow-md pointer-events-auto"
@@ -403,7 +426,9 @@ export const UI = ({
         >
           {/* Zoom Out Button */}
           <button
-            onClick={() => setZoom(Math.max(1.0, zoom - 0.1))}
+            onClick={() =>
+              handleZoomChange(Math.max(1.0, zoom - 0.1), "zoom_out")
+            }
             disabled={zoom <= 1.0}
             className={`flex items-center justify-center w-9 h-9 rounded-full transition-all duration-300 ${
               zoom <= 1.0
@@ -435,7 +460,9 @@ export const UI = ({
 
           {/* Zoom In Button */}
           <button
-            onClick={() => setZoom(Math.min(1.5, zoom + 0.1))}
+            onClick={() =>
+              handleZoomChange(Math.min(1.5, zoom + 0.1), "zoom_in")
+            }
             disabled={zoom >= 1.5}
             className={`flex items-center justify-center w-9 h-9 rounded-full transition-all duration-300 ${
               zoom >= 1.5
@@ -464,7 +491,7 @@ export const UI = ({
           {/* Reset Zoom Button */}
           {zoom !== 1 && (
             <button
-              onClick={() => setZoom(1)}
+              onClick={() => handleZoomChange(1, "zoom_reset")}
               className="ml-1 text-white/80 hover:text-white text-xs transition-colors"
               title="Reset Zoom"
             >
@@ -484,7 +511,9 @@ export const UI = ({
         >
           {/* Zoom Out Button - Mobile */}
           <button
-            onClick={() => setZoom(Math.max(1.0, zoom - 0.1))}
+            onClick={() =>
+              handleZoomChange(Math.max(1.0, zoom - 0.1), "zoom_out")
+            }
             disabled={zoom <= 1.0}
             className={`flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 ${
               zoom <= 1.0
@@ -514,7 +543,7 @@ export const UI = ({
               } else {
                 // Normal previous page behavior
                 const newPage = Math.max(0, page - 1);
-                setPage(newPage);
+                handlePageChange(newPage);
                 // When going back: cover gets "right", other pages get "right" (to show the last page of the spread)
                 setPageFocus(newPage === 0 ? "right" : "right");
               }
@@ -560,7 +589,7 @@ export const UI = ({
               } else {
                 // Normal next page behavior
                 const newPage = Math.min(pages.length, page + 1);
-                setPage(newPage);
+                handlePageChange(newPage);
                 // When opening from cover (page 0 -> 1), start with right focus
                 // Otherwise reset to left focus for new spreads
                 setPageFocus(page === 0 && newPage === 1 ? "right" : "left");
@@ -590,7 +619,9 @@ export const UI = ({
 
           {/* Zoom In Button - Mobile */}
           <button
-            onClick={() => setZoom(Math.min(1.5, zoom + 0.1))}
+            onClick={() =>
+              handleZoomChange(Math.min(1.5, zoom + 0.1), "zoom_in")
+            }
             disabled={zoom >= 1.5}
             className={`flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 ${
               zoom >= 1.5

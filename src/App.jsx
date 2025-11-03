@@ -5,6 +5,7 @@ import { Experience } from "./components/Experience";
 import { UI } from "./components/UI";
 import { PagesProvider } from "./contexts/PagesContext";
 import { supabaseClient } from "./utils/supabase";
+import { initGA, trackFlipbookView, trackTimeSpent } from "./utils/googleAnalytics";
 
 function App() {
   const [pages, setPages] = useState([]);
@@ -15,6 +16,8 @@ function App() {
   const [backgroundGradient, setBackgroundGradient] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [flipbookId, setFlipbookId] = useState(null);
+  const [startTime] = useState(Date.now());
 
   const getData = async () => {
     try {
@@ -23,18 +26,20 @@ function App() {
 
       // Get flipbook ID from URL query parameter
       const urlParams = new URLSearchParams(window.location.search);
-      const flipbookId = urlParams.get("id");
+      const flipbookIdParam = urlParams.get("id");
 
-      if (!flipbookId) {
+      if (!flipbookIdParam) {
         throw new Error(
           "No flipbook ID provided in URL. Please add ?id=your-flipbook-id to the URL."
         );
       }
 
+      setFlipbookId(flipbookIdParam);
+
       const { data, error: supabaseError } = await supabaseClient
         .from("flipbooks")
         .select("*")
-        .eq("id", flipbookId)
+        .eq("id", flipbookIdParam)
         .single();
 
       if (supabaseError) {
@@ -48,7 +53,7 @@ function App() {
         setCoverOptions(data.cover_options || "default");
         setBackgroundGradient(data.background_gradient || "royal-blue");
       } else {
-        throw new Error(`Flipbook with ID "${flipbookId}" not found.`);
+        throw new Error(`Flipbook with ID "${flipbookIdParam}" not found.`);
       }
     } catch (err) {
       console.error("Error fetching flipbook data:", err);
@@ -61,6 +66,38 @@ function App() {
   useEffect(() => {
     getData();
   }, []);
+
+  // Initialize Google Analytics on mount
+  useEffect(() => {
+    initGA();
+  }, []);
+
+  // Track flipbook view when loaded
+  useEffect(() => {
+    if (flipbookId && flipbookTitle) {
+      // Google Analytics
+      trackFlipbookView(flipbookId, flipbookTitle);
+    }
+  }, [flipbookId, flipbookTitle]);
+
+  // Track time spent when user leaves
+  useEffect(() => {
+    if (!flipbookId) return;
+
+    const handleBeforeUnload = () => {
+      // Calculate time spent
+      const timeSpent = Math.floor((Date.now() - startTime) / 1000);
+      
+      // Google Analytics
+      trackTimeSpent(flipbookId, timeSpent);
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [flipbookId, startTime]);
 
   const getBackgroundClass = (style) => {
     const backgroundMap = {
@@ -100,6 +137,7 @@ function App() {
           loading={loading}
           error={error}
           backgroundGradient={backgroundGradient}
+          flipbookId={flipbookId}
         />
         <div className="relative w-full h-full">
           {/* Mobile viewport container */}
