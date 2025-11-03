@@ -24,12 +24,12 @@ const easingFactor = 0.5; // Controls the speed of the easing;
 const easingFactorFold = 0.3; // Controls the speed of the fold easing;
 const insideCurveStrenght = 0.18; // Controls the strength of the inside curve;
 const outsideCurveStrength = -0.002; // Controls the strength of the outside curve;
-const turningCurveStrength = 0.09; // Controls the strength of the turning curve;
+const turningCurveStrength = 0.05; // Controls the strength of the turning curve;
 
 const PAGE_WIDTH = 1.28;
 const PAGE_HEIGHT = 1.71; // 4:3 Aspect Ratio
 const PAGE_DEPTH = 0.003;
-const PAGE_SEGMENTS = 40;
+const PAGE_SEGMENTS = 50;
 const SEGMENT_WIDTH = PAGE_WIDTH / PAGE_SEGMENTS;
 
 const pageGeometry = new BoxGeometry(

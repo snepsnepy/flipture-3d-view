@@ -156,16 +156,17 @@ export const UI = ({
 
   const getBackgroundClass = (style) => {
     const backgroundMap = {
-      "deep-white": "bg-gradient-to-br from-[#FFFFFF] to-[#F0F0F0]",
+      "deep-white": "bg-gradient-to-br from-[#616161] to-[#9E9E9E]",
       "deep-black": "bg-gradient-to-br from-[#000000] to-[#212121]",
       "royal-blue":
-        "bg-gradient-to-br from-[#091E3A] via-[#2F80ED] to-[#2D9EE0]",
-      "purple-dream": "bg-gradient-to-br from-[#9400D3] to-[#4B0082]",
+        "bg-gradient-to-br from-[#000080] via-[#0046FF] to-[#4169E1]",
+      "purple-dream":
+        "bg-gradient-to-br from-[#FF8C00] via-[#FF7F50] to-[#FF6347]",
       "sunset-orange": "bg-gradient-to-br from-[#E65C00] to-[#F9D423]",
-      "fire-red": "bg-gradient-to-br from-[#E52D27] to-[#B31217]",
-      "spring-green": "bg-gradient-to-br from-[#ADD100] to-[#7B920A]",
+      "fire-red": "bg-gradient-to-br from-[#870000] to-[#190A05]",
+      "spring-green": "bg-gradient-to-br from-[#215F00] to-[#E4E4D9]",
       "arctic-blue":
-        "bg-gradient-to-br from-[#00F5FF] via-[#00CED1] to-[#20B2AA]",
+        "bg-gradient-to-br from-[#5433FF] via-[#20BDFF] to-[#A5FECB]",
     };
     return backgroundMap[style] || backgroundMap["royal-blue"];
   };
