@@ -5,6 +5,7 @@ import { PDFtoIMG } from "../utils/pdfUtils";
 export const pageAtom = atom(0);
 export const scrollProgressAtom = atom(0);
 export const pageFocusAtom = atom("right"); // "left" or "right" - which page of the spread is focused
+export const zoomAtom = atom(1); // Zoom multiplier: min 1.0, max 1.5
 
 export const UI = ({
   onPagesChange,
@@ -18,6 +19,7 @@ export const UI = ({
   const [page, setPage] = useAtom(pageAtom);
   const [pageFocus, setPageFocus] = useAtom(pageFocusAtom);
   const [scrollProgress] = useAtom(scrollProgressAtom);
+  const [zoom, setZoom] = useAtom(zoomAtom);
   const [pdfImages, setPdfImages] = useState([]);
   const [conversionProgress, setConversionProgress] = useState({
     completed: 0,
@@ -311,15 +313,15 @@ export const UI = ({
             setPage(0);
             setPageFocus("right");
           }}
-          className="fixed top-4 right-4 md:top-6 md:right-6 z-40 bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 active:scale-95 rounded-full px-4 py-2 md:px-5 md:py-3 transition-all duration-300 flex items-center gap-2 group shadow-lg pointer-events-auto"
+          className="fixed top-4 right-4 md:top-6 md:right-6 z-40 bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 active:scale-95 rounded-full px-3 py-2 md:px-4 md:py-3 transition-all duration-300 flex items-center gap-2 group shadow-md pointer-events-auto"
           style={{
             opacity: isMobile ? scrollProgress : 1,
           }}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
+            width={isMobile ? 20 : 24}
+            height={isMobile ? 20 : 24}
             viewBox="0 0 512 512"
           >
             <path
@@ -391,14 +393,117 @@ export const UI = ({
         </div>
       </div>
 
+      {/* Desktop Zoom Controls - Middle Bottom */}
+      {isFullyLoaded && (
+        <div
+          className="hidden md:flex fixed bottom-8 left-1/2 transform -translate-x-1/2 items-center gap-3 z-20 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 transition-opacity duration-500 shadow-md"
+          style={{
+            opacity: scrollProgress,
+          }}
+        >
+          {/* Zoom Out Button */}
+          <button
+            onClick={() => setZoom(Math.max(1.0, zoom - 0.1))}
+            disabled={zoom <= 1.0}
+            className={`flex items-center justify-center w-9 h-9 rounded-full transition-all duration-300 ${
+              zoom <= 1.0
+                ? "text-gray-400 cursor-not-allowed"
+                : "text-white hover:bg-white/20 active:scale-95"
+            }`}
+            title="Zoom Out"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-5 h-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
+              <line x1="8" y1="11" x2="14" y2="11" />
+            </svg>
+          </button>
+
+          {/* Zoom Indicator */}
+          <div className="text-white text-sm font-medium min-w-[60px] text-center">
+            {Math.round(zoom * 100)}%
+          </div>
+
+          {/* Zoom In Button */}
+          <button
+            onClick={() => setZoom(Math.min(1.5, zoom + 0.1))}
+            disabled={zoom >= 1.5}
+            className={`flex items-center justify-center w-9 h-9 rounded-full transition-all duration-300 ${
+              zoom >= 1.5
+                ? "text-gray-400 cursor-not-allowed"
+                : "text-white hover:bg-white/20 active:scale-95"
+            }`}
+            title="Zoom In"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-5 h-5"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
+              <line x1="11" y1="8" x2="11" y2="14" />
+              <line x1="8" y1="11" x2="14" y2="11" />
+            </svg>
+          </button>
+
+          {/* Reset Zoom Button */}
+          {zoom !== 1 && (
+            <button
+              onClick={() => setZoom(1)}
+              className="ml-1 text-white/80 hover:text-white text-xs transition-colors"
+              title="Reset Zoom"
+            >
+              Reset
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Mobile Navigation Controls */}
       {isFullyLoaded && (
         <div
-          className="md:hidden fixed bottom-8 left-0 right-0 flex justify-center items-center gap-4 px-4 z-20 transition-opacity duration-500"
+          className="md:hidden fixed bottom-8 left-0 right-0 flex justify-center items-center gap-3 px-4 z-20 transition-opacity duration-500"
           style={{
             opacity: scrollProgress, // Show when book is centered (scrollProgress increases)
           }}
         >
+          {/* Zoom Out Button - Mobile */}
+          <button
+            onClick={() => setZoom(Math.max(1.0, zoom - 0.1))}
+            disabled={zoom <= 1.0}
+            className={`flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 ${
+              zoom <= 1.0
+                ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                : "bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 active:scale-95"
+            }`}
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
+              <line x1="8" y1="11" x2="14" y2="11" />
+            </svg>
+          </button>
+
           {/* Previous Page Button */}
           <button
             onClick={() => {
@@ -480,6 +585,29 @@ export const UI = ({
                 strokeWidth={2}
                 d="M9 5l7 7-7 7"
               />
+            </svg>
+          </button>
+
+          {/* Zoom In Button - Mobile */}
+          <button
+            onClick={() => setZoom(Math.min(1.5, zoom + 0.1))}
+            disabled={zoom >= 1.5}
+            className={`flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 ${
+              zoom >= 1.5
+                ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                : "bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 active:scale-95"
+            }`}
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.35-4.35" />
+              <line x1="11" y1="8" x2="11" y2="14" />
+              <line x1="8" y1="11" x2="14" y2="11" />
             </svg>
           </button>
         </div>

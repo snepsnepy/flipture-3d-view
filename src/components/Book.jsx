@@ -15,7 +15,7 @@ import {
   MathUtils,
   TextureLoader,
 } from "three";
-import { pageAtom, pageFocusAtom } from "./UI";
+import { pageAtom, pageFocusAtom, zoomAtom } from "./UI";
 import { useFrame } from "@react-three/fiber";
 import { useTexture, useCursor } from "@react-three/drei";
 import { degToRad } from "three/src/math/MathUtils.js";
@@ -413,8 +413,10 @@ const Page = ({
 export const Book = ({ pages = [], cover = "default", ...props }) => {
   const [page] = useAtom(pageAtom);
   const [pageFocus] = useAtom(pageFocusAtom);
+  const [zoom] = useAtom(zoomAtom);
   const [delayedPage, setDelayedPage] = useState(page);
-  const [scale, setScale] = useState(1);
+  const [baseScale, setBaseScale] = useState(1);
+  const [smoothZoom, setSmoothZoom] = useState(zoom);
   const [isMobile, setIsMobile] = useState(false);
   const [mobileOffset, setMobileOffset] = useState(0);
   const groupRef = useRef();
@@ -515,11 +517,11 @@ export const Book = ({ pages = [], cover = "default", ...props }) => {
             ? renderPages.length
             : pages.length;
         const isBookOpened = page > 0 && page < totalPages;
-        setScale(isBookOpened ? 1.1 : 0.7);
+        setBaseScale(isBookOpened ? 1.1 : 0.7);
       } else if (isTablet) {
-        setScale(0.85);
+        setBaseScale(0.85);
       } else {
-        setScale(1);
+        setBaseScale(1);
       }
     };
 
@@ -533,6 +535,11 @@ export const Book = ({ pages = [], cover = "default", ...props }) => {
     usePdfFrontCover,
     usePdfBackCover,
   ]);
+
+  // Initialize smooth zoom when component mounts
+  useEffect(() => {
+    setSmoothZoom(zoom);
+  }, []); // Only on mount
 
   // Calculate mobile offset based on current page and focus
   useEffect(() => {
@@ -594,7 +601,7 @@ export const Book = ({ pages = [], cover = "default", ...props }) => {
     return () => clearTimeout(timeout);
   }, [page]);
 
-  // Smooth position transitions using easing
+  // Smooth position and zoom transitions using easing
   useFrame((_, delta) => {
     if (groupRef.current) {
       // Combine external position with mobile offset
@@ -605,11 +612,19 @@ export const Book = ({ pages = [], cover = "default", ...props }) => {
       ];
 
       easing.damp3(groupRef.current.position, targetPosition, 0.25, delta);
+
+      // Smooth zoom animation
+      const newSmoothZoom =
+        smoothZoom + (zoom - smoothZoom) * Math.min(1, delta * 8);
+      setSmoothZoom(newSmoothZoom);
     }
   });
 
+  // Calculate final scale by multiplying base scale with smooth zoom
+  const finalScale = baseScale * smoothZoom;
+
   return (
-    <group ref={groupRef} rotation-y={-Math.PI / 2} scale={scale}>
+    <group ref={groupRef} rotation-y={-Math.PI / 2} scale={finalScale}>
       {renderPages.map((pageData, index) => (
         <Page
           key={index}
