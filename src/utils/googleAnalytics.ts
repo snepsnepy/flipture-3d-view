@@ -18,10 +18,17 @@ export const trackPageView = (flipbookId: string, pageNumber: number) => {
     label: `Flipbook ${flipbookId} - Page ${pageNumber}`,
     value: pageNumber,
   });
+
+  // Trimite și ca event custom cu flipbook_id pentru filtrare în GA4
+  ReactGA.gtag("event", "page_flip", {
+    flipbook_id: flipbookId,
+    page_number: pageNumber,
+  });
 };
 
 // Track zoom
 export const trackZoom = (
+  flipbookId: string,
   action: "zoom_in" | "zoom_out" | "zoom_reset",
   level: number
 ) => {
@@ -30,6 +37,12 @@ export const trackZoom = (
     action: action,
     label: `Zoom ${action}`,
     value: level,
+  });
+
+  // Trimite și ca event custom cu flipbook_id
+  ReactGA.gtag("event", action, {
+    flipbook_id: flipbookId,
+    zoom_level: level,
   });
 };
 
@@ -49,10 +62,16 @@ export const trackFlipbookView = (flipbookId: string, title: string) => {
 };
 
 // Track time spent (când utilizatorul pleacă)
-export const trackTimeSpent = (timeInSeconds: number) => {
+export const trackTimeSpent = (flipbookId: string, timeInSeconds: number) => {
   ReactGA.event({
     category: "Engagement",
     action: "time_spent",
     value: timeInSeconds,
+  });
+
+  // Trimite și ca event custom cu flipbook_id
+  ReactGA.gtag("event", "engagement_time", {
+    flipbook_id: flipbookId,
+    time_seconds: timeInSeconds,
   });
 };

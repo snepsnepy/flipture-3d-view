@@ -47,7 +47,7 @@ export const UI = ({
     (newZoom, action = "zoom") => {
       setZoom(newZoom);
       if (flipbookId) {
-        trackZoom(action, Math.round(newZoom * 100)); // Google Analytics
+        trackZoom(flipbookId, action, Math.round(newZoom * 100)); // Google Analytics
       }
     },
     [setZoom, flipbookId]

@@ -89,7 +89,7 @@ function App() {
       const timeSpent = Math.floor((Date.now() - startTime) / 1000);
       
       // Google Analytics
-      trackTimeSpent(timeSpent);
+      trackTimeSpent(flipbookId, timeSpent);
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
