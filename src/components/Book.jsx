@@ -15,7 +15,7 @@ import {
   MathUtils,
   TextureLoader,
 } from "three";
-import { pageAtom, pageFocusAtom } from "./UI";
+import { pageAtom, pageFocusAtom, zoomAtom } from "./UI";
 import { useFrame } from "@react-three/fiber";
 import { useTexture, useCursor } from "@react-three/drei";
 import { degToRad } from "three/src/math/MathUtils.js";
@@ -24,12 +24,12 @@ const easingFactor = 0.5; // Controls the speed of the easing;
 const easingFactorFold = 0.3; // Controls the speed of the fold easing;
 const insideCurveStrenght = 0.18; // Controls the strength of the inside curve;
 const outsideCurveStrength = -0.002; // Controls the strength of the outside curve;
-const turningCurveStrength = 0.09; // Controls the strength of the turning curve;
+const turningCurveStrength = 0.05; // Controls the strength of the turning curve;
 
 const PAGE_WIDTH = 1.28;
 const PAGE_HEIGHT = 1.71; // 4:3 Aspect Ratio
 const PAGE_DEPTH = 0.003;
-const PAGE_SEGMENTS = 40;
+const PAGE_SEGMENTS = 50;
 const SEGMENT_WIDTH = PAGE_WIDTH / PAGE_SEGMENTS;
 
 const pageGeometry = new BoxGeometry(
@@ -413,8 +413,10 @@ const Page = ({
 export const Book = ({ pages = [], cover = "default", ...props }) => {
   const [page] = useAtom(pageAtom);
   const [pageFocus] = useAtom(pageFocusAtom);
+  const [zoom] = useAtom(zoomAtom);
   const [delayedPage, setDelayedPage] = useState(page);
-  const [scale, setScale] = useState(1);
+  const [baseScale, setBaseScale] = useState(1);
+  const [smoothZoom, setSmoothZoom] = useState(zoom);
   const [isMobile, setIsMobile] = useState(false);
   const [mobileOffset, setMobileOffset] = useState(0);
   const groupRef = useRef();
@@ -515,11 +517,11 @@ export const Book = ({ pages = [], cover = "default", ...props }) => {
             ? renderPages.length
             : pages.length;
         const isBookOpened = page > 0 && page < totalPages;
-        setScale(isBookOpened ? 1.1 : 0.7);
+        setBaseScale(isBookOpened ? 1.1 : 0.7);
       } else if (isTablet) {
-        setScale(0.85);
+        setBaseScale(0.85);
       } else {
-        setScale(1);
+        setBaseScale(1);
       }
     };
 
@@ -534,7 +536,12 @@ export const Book = ({ pages = [], cover = "default", ...props }) => {
     usePdfBackCover,
   ]);
 
-  // Calculate mobile offset based on current page and focus
+  // Initialize smooth zoom when component mounts
+  useEffect(() => {
+    setSmoothZoom(zoom);
+  }, []); // Only on mount
+
+  // Calculate mobile offset based on current page, focus, and zoom
   useEffect(() => {
     if (isMobile) {
       const pageWidth = 1.28; // PAGE_WIDTH
@@ -551,12 +558,17 @@ export const Book = ({ pages = [], cover = "default", ...props }) => {
         offset = 0;
       } else {
         // For content pages, use focus state to determine which page to show
+        // Apply zoom factor to keep the focused page centered when zooming
+        const zoomFactor = smoothZoom || 1;
+        const baseZoom = 1.1; // Mobile base zoom when opened
+        const zoomAdjustment = (zoomFactor - 1) / baseZoom; // Normalize zoom adjustment
+
         if (pageFocus === "left") {
           // Focus on left page of the spread
-          offset = pageWidth * 0.3 + scaleAdjustment;
+          offset = pageWidth * 0.3 * zoomFactor + scaleAdjustment;
         } else {
           // Focus on right page of the spread - needs different adjustment
-          offset = -pageWidth * 0.75 + scaleAdjustment * 2; // More adjustment for right pages
+          offset = -pageWidth * 0.75 * zoomFactor + scaleAdjustment * 2;
         }
       }
 
@@ -564,7 +576,7 @@ export const Book = ({ pages = [], cover = "default", ...props }) => {
     } else {
       setMobileOffset(0);
     }
-  }, [page, pages.length, isMobile, pageFocus, renderPages.length]);
+  }, [page, pages.length, isMobile, pageFocus, renderPages.length, smoothZoom]);
 
   useEffect(() => {
     let timeout;
@@ -594,7 +606,7 @@ export const Book = ({ pages = [], cover = "default", ...props }) => {
     return () => clearTimeout(timeout);
   }, [page]);
 
-  // Smooth position transitions using easing
+  // Smooth position and zoom transitions using easing
   useFrame((_, delta) => {
     if (groupRef.current) {
       // Combine external position with mobile offset
@@ -605,11 +617,19 @@ export const Book = ({ pages = [], cover = "default", ...props }) => {
       ];
 
       easing.damp3(groupRef.current.position, targetPosition, 0.25, delta);
+
+      // Smooth zoom animation
+      const newSmoothZoom =
+        smoothZoom + (zoom - smoothZoom) * Math.min(1, delta * 8);
+      setSmoothZoom(newSmoothZoom);
     }
   });
 
+  // Calculate final scale by multiplying base scale with smooth zoom
+  const finalScale = baseScale * smoothZoom;
+
   return (
-    <group ref={groupRef} rotation-y={-Math.PI / 2} scale={scale}>
+    <group ref={groupRef} rotation-y={-Math.PI / 2} scale={finalScale}>
       {renderPages.map((pageData, index) => (
         <Page
           key={index}
