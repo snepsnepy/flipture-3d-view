@@ -80,8 +80,6 @@ function App() {
   // Track flipbook view when loaded (only once)
   useEffect(() => {
     if (flipbookId && flipbookTitle && !hasTrackedView.current) {
-      // Google Analytics
-      console.log("Tracking flipbook view:", { flipbookId, flipbookTitle });
       trackFlipbookView(flipbookId, flipbookTitle);
       hasTrackedView.current = true;
     }
