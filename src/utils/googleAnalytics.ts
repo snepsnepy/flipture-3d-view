@@ -1,5 +1,11 @@
 import ReactGA from "react-ga4";
 
+// Helper function pentru a detecta preview mode
+const isPreviewMode = (): boolean => {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get("preview") === "true";
+};
+
 // Inițializează GA4
 export const initGA = () => {
   const GA_MEASUREMENT_ID = (import.meta as any).env
@@ -12,6 +18,11 @@ export const initGA = () => {
 
 // Track page view
 export const trackPageView = (flipbookId: string, pageNumber: number) => {
+  if (isPreviewMode()) {
+    console.log("Preview mode detected - Google Analytics tracking disabled");
+    return;
+  }
+
   ReactGA.event({
     category: "Flipbook",
     action: "page_view",
@@ -32,6 +43,11 @@ export const trackZoom = (
   action: "zoom_in" | "zoom_out" | "zoom_reset",
   level: number
 ) => {
+  if (isPreviewMode()) {
+    console.log("Preview mode detected - Google Analytics tracking disabled");
+    return;
+  }
+
   ReactGA.event({
     category: "Interaction",
     action: action,
@@ -48,6 +64,11 @@ export const trackZoom = (
 
 // Track session start
 export const trackFlipbookView = (flipbookId: string, title: string) => {
+  if (isPreviewMode()) {
+    console.log("Preview mode detected - Google Analytics tracking disabled");
+    return;
+  }
+
   ReactGA.event({
     category: "Flipbook",
     action: "view",
@@ -63,6 +84,11 @@ export const trackFlipbookView = (flipbookId: string, title: string) => {
 
 // Track time spent (când utilizatorul pleacă)
 export const trackTimeSpent = (flipbookId: string, timeInSeconds: number) => {
+  if (isPreviewMode()) {
+    console.log("Preview mode detected - Google Analytics tracking disabled");
+    return;
+  }
+
   ReactGA.event({
     category: "Engagement",
     action: "time_spent",
