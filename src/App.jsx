@@ -3,6 +3,7 @@ import { Suspense, useState, useEffect, useRef } from "react";
 import { ScrollControls } from "@react-three/drei";
 import { Experience } from "./components/Experience";
 import { UI } from "./components/UI";
+import { Background } from "./components/Background";
 import { PagesProvider } from "./contexts/PagesContext";
 import { supabaseClient } from "./utils/supabase";
 import {
@@ -10,7 +11,6 @@ import {
   trackFlipbookView,
   trackTimeSpent,
 } from "./utils/googleAnalytics";
-import { ShaderGradientCanvas, ShaderGradient } from "@shadergradient/react";
 
 function App() {
   const [pages, setPages] = useState([]);
@@ -105,84 +105,14 @@ function App() {
     };
   }, [flipbookId, startTime]);
 
-  const getBackgroundClass = (style) => {
-    const backgroundMap = {
-      "deep-white": "bg-gradient-to-br from-[#616161] to-[#9E9E9E]",
-      "deep-black": "bg-gradient-to-br from-[#000000] to-[#212121]",
-      "royal-blue":
-        "bg-gradient-to-br from-[#000080] via-[#0046FF] to-[#4169E1]",
-      "purple-dream":
-        "bg-gradient-to-br from-[#FF8C00] via-[#FF7F50] to-[#FF6347]",
-      "sunset-orange": "bg-gradient-to-br from-[#E65C00] to-[#F9D423]",
-      "fire-red": "bg-gradient-to-br from-[#870000] to-[#190A05]",
-      "spring-green": "bg-gradient-to-br from-[#215F00] to-[#E4E4D9]",
-      "arctic-blue":
-        "bg-gradient-to-br from-[#5433FF] via-[#20BDFF] to-[#A5FECB]",
-    };
-    return backgroundMap[style] || backgroundMap["royal-blue"];
-  };
-
-  const renderBackground = (style) => {
-    if (style === "test") {
-      return (
-        <div className="absolute inset-0 z-0">
-          <ShaderGradientCanvas
-            style={{
-              width: "100%",
-              height: "100%",
-            }}
-            lazyLoad={undefined}
-            fov={45}
-            pixelDensity={1}
-            pointerEvents="none"
-          >
-            <ShaderGradient
-              animate="on"
-              type="waterPlane"
-              wireframe={false}
-              shader="defaults"
-              uTime={0.2}
-              uSpeed={0.1}
-              uStrength={2.4}
-              uDensity={1.1}
-              uFrequency={5.5}
-              uAmplitude={0}
-              positionX={-0.5}
-              positionY={0.1}
-              positionZ={0}
-              rotationX={0}
-              rotationY={0}
-              rotationZ={235}
-              color1="#5606FF"
-              color2="#e63535"
-              color3="#000000"
-              reflection={0.1}
-              // View (camera) props
-              cAzimuthAngle={180}
-              cPolarAngle={115}
-              cDistance={3.9}
-              cameraZoom={1}
-              // Effect props
-              lightType="3d"
-              brightness={1.1}
-              envPreset="city"
-              grain="off"
-              // Tool props
-              toggleAxis={undefined}
-              zoomOut={undefined}
-              hoverState=""
-              // Optional - if using transition features
-              enableTransition={false}
-            />
-          </ShaderGradientCanvas>
-        </div>
-      );
+  // Update browser tab title with flipbook title
+  useEffect(() => {
+    if (flipbookTitle && flipbookTitle !== "Your Flipbook Title") {
+      document.title = flipbookTitle;
+    } else {
+      document.title = "Flipture Flipbook";
     }
-
-    return (
-      <div className={`absolute inset-0 z-0 ${getBackgroundClass(style)}`} />
-    );
-  };
+  }, [flipbookTitle]);
 
   // Don't render anything until we have the background color
   if (!backgroundGradient && !error) {
@@ -191,7 +121,7 @@ function App() {
 
   return (
     <div className="h-full w-full relative">
-      {renderBackground(backgroundGradient)}
+      <Background style={backgroundGradient} />
       <PagesProvider pages={pages}>
         <UI
           onPagesChange={setPages}
