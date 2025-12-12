@@ -9,8 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-spring/three": "^10.0.3",
     "@react-three/drei": "^9.108.1",
     "@react-three/fiber": "^8.16.8",
+    "@shadergradient/react": "^2.4.20",
     "@supabase/supabase-js": "^2.58.0",
     "@types/three": "0.152.1",
     "autoprefixer": "^10.4.19",
