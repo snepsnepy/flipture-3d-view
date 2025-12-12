@@ -10,6 +10,7 @@ import {
   trackFlipbookView,
   trackTimeSpent,
 } from "./utils/googleAnalytics";
+import { ShaderGradientCanvas, ShaderGradient } from "@shadergradient/react";
 
 function App() {
   const [pages, setPages] = useState([]);
@@ -121,6 +122,68 @@ function App() {
     return backgroundMap[style] || backgroundMap["royal-blue"];
   };
 
+  const renderBackground = (style) => {
+    if (style === "test") {
+      return (
+        <div className="absolute inset-0 z-0">
+          <ShaderGradientCanvas
+            style={{
+              width: "100%",
+              height: "100%",
+            }}
+            lazyLoad={undefined}
+            fov={45}
+            pixelDensity={1}
+            pointerEvents="none"
+          >
+            <ShaderGradient
+              animate="on"
+              type="waterPlane"
+              wireframe={false}
+              shader="defaults"
+              uTime={0.2}
+              uSpeed={0.1}
+              uStrength={2.4}
+              uDensity={1.1}
+              uFrequency={5.5}
+              uAmplitude={0}
+              positionX={-0.5}
+              positionY={0.1}
+              positionZ={0}
+              rotationX={0}
+              rotationY={0}
+              rotationZ={235}
+              color1="#5606FF"
+              color2="#e63535"
+              color3="#000000"
+              reflection={0.1}
+              // View (camera) props
+              cAzimuthAngle={180}
+              cPolarAngle={115}
+              cDistance={3.9}
+              cameraZoom={1}
+              // Effect props
+              lightType="3d"
+              brightness={1.1}
+              envPreset="city"
+              grain="off"
+              // Tool props
+              toggleAxis={undefined}
+              zoomOut={undefined}
+              hoverState=""
+              // Optional - if using transition features
+              enableTransition={false}
+            />
+          </ShaderGradientCanvas>
+        </div>
+      );
+    }
+
+    return (
+      <div className={`absolute inset-0 z-0 ${getBackgroundClass(style)}`} />
+    );
+  };
+
   // Don't render anything until we have the background color
   if (!backgroundGradient && !error) {
     return null;
@@ -128,11 +191,7 @@ function App() {
 
   return (
     <div className="h-full w-full relative">
-      <div
-        className={`absolute inset-0 z-0 ${getBackgroundClass(
-          backgroundGradient
-        )}`}
-      />
+      {renderBackground(backgroundGradient)}
       <PagesProvider pages={pages}>
         <UI
           onPagesChange={setPages}
