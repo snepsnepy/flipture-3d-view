@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { atom, useAtom } from "jotai";
 import { PDFtoIMG } from "../utils/pdfUtils";
 import { trackPageView, trackZoom } from "../utils/googleAnalytics";
+import { Background } from "./Background";
 
 export const pageAtom = atom(0);
 export const scrollProgressAtom = atom(0);
@@ -179,119 +180,101 @@ export const UI = ({
     }
   }, [pdfUrl, loading]);
 
-  const getBackgroundClass = (style) => {
-    const backgroundMap = {
-      "deep-white": "bg-gradient-to-br from-[#616161] to-[#9E9E9E]",
-      "deep-black": "bg-gradient-to-br from-[#000000] to-[#212121]",
-      "royal-blue":
-        "bg-gradient-to-br from-[#000080] via-[#0046FF] to-[#4169E1]",
-      "purple-dream":
-        "bg-gradient-to-br from-[#FF8C00] via-[#FF7F50] to-[#FF6347]",
-      "sunset-orange": "bg-gradient-to-br from-[#E65C00] to-[#F9D423]",
-      "fire-red": "bg-gradient-to-br from-[#870000] to-[#190A05]",
-      "spring-green": "bg-gradient-to-br from-[#215F00] to-[#E4E4D9]",
-      "arctic-blue":
-        "bg-gradient-to-br from-[#5433FF] via-[#20BDFF] to-[#A5FECB]",
-    };
-    return backgroundMap[style] || backgroundMap["royal-blue"];
-  };
-
   return (
     <>
       {/* Main Loader - Shows until flipbook is fully ready */}
       {(!isFullyLoaded || loading) && (
-        <div
-          className={`fixed inset-0 ${getBackgroundClass(
-            backgroundGradient
-          )} flex items-center justify-center z-50`}
-        >
-          <div className="text-center">
-            {/* Animated Logo/Icon */}
-            <div className="relative mb-8">
-              <div className="w-24 h-24 mx-auto relative">
-                {/* Outer rotating ring */}
-                <div className="absolute inset-0 border-4 border-white/20 rounded-full animate-spin"></div>
-                {/* Inner pulsing circle */}
-                <div className="absolute inset-2 border-4 border-white rounded-full animate-pulse"></div>
-                {/* Center dot */}
-                <div className="absolute top-1/2 left-1/2 w-3 h-3 bg-white rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
-              </div>
-            </div>
-
-            {/* Loading Text */}
-            <h2 className="text-3xl font-bold text-white mb-4 font-poppins">
-              {loading
-                ? "Loading Flipbook Data..."
-                : isConverting
-                ? "Preparing Your Flipbook"
-                : "Loading..."}
-            </h2>
-
-            {/* Progress Indicator */}
-            {isConverting && (
-              <div className="max-w-md mx-auto">
-                <div className="flex justify-between text-white/80 text-sm mb-2">
-                  <span>Converting PDF</span>
-                  <span>
-                    {conversionProgress.total > 0
-                      ? `${conversionProgress.completed}/${conversionProgress.total}`
-                      : "Loading..."}
-                  </span>
+        <div className="fixed inset-0 z-50">
+          <Background style={backgroundGradient} />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center">
+              {/* Animated Logo/Icon */}
+              <div className="relative mb-8">
+                <div className="w-24 h-24 mx-auto relative">
+                  {/* Outer rotating ring */}
+                  <div className="absolute inset-0 border-4 border-white/20 rounded-full animate-spin"></div>
+                  {/* Inner pulsing circle */}
+                  <div className="absolute inset-2 border-4 border-white rounded-full animate-pulse"></div>
+                  {/* Center dot */}
+                  <div className="absolute top-1/2 left-1/2 w-3 h-3 bg-white rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
                 </div>
+              </div>
 
-                {/* Progress Bar */}
-                <div className="w-full bg-white/20 rounded-full h-2 mb-4">
+              {/* Loading Text */}
+              <h2 className="text-3xl font-bold text-white mb-4 font-poppins">
+                {loading
+                  ? "Loading Flipbook Data..."
+                  : isConverting
+                  ? "Preparing Your Flipbook"
+                  : "Loading..."}
+              </h2>
+
+              {/* Progress Indicator */}
+              {isConverting && (
+                <div className="max-w-md mx-auto">
+                  <div className="flex justify-between text-white/80 text-sm mb-2">
+                    <span>Converting PDF</span>
+                    <span>
+                      {conversionProgress.total > 0
+                        ? `${conversionProgress.completed}/${conversionProgress.total}`
+                        : "Loading..."}
+                    </span>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="w-full bg-white/20 rounded-full h-2 mb-4">
+                    <div
+                      className="bg-gradient-to-r from-[#FFCC00] to-purple-400 h-2 rounded-full transition-all duration-500 ease-out"
+                      style={{
+                        width:
+                          conversionProgress.total > 0
+                            ? `${
+                                (conversionProgress.completed /
+                                  conversionProgress.total) *
+                                100
+                              }%`
+                            : "0%",
+                      }}
+                    ></div>
+                  </div>
+
+                  <p className="text-white/60 text-sm">
+                    {conversionProgress.total > 0
+                      ? `${Math.round(
+                          (conversionProgress.completed /
+                            conversionProgress.total) *
+                            100
+                        )}% complete`
+                      : "Preparing conversion..."}
+                  </p>
+                </div>
+              )}
+
+              {/* Loading Animation for when not converting */}
+              {!isConverting && pages.length === 0 && (
+                <div className="flex justify-center space-x-1">
                   <div
-                    className="bg-gradient-to-r from-[#FFCC00] to-purple-400 h-2 rounded-full transition-all duration-500 ease-out"
-                    style={{
-                      width:
-                        conversionProgress.total > 0
-                          ? `${
-                              (conversionProgress.completed /
-                                conversionProgress.total) *
-                              100
-                            }%`
-                          : "0%",
-                    }}
+                    className="w-2 h-2 bg-white rounded-full animate-bounce"
+                    style={{ animationDelay: "0ms" }}
+                  ></div>
+                  <div
+                    className="w-2 h-2 bg-white rounded-full animate-bounce"
+                    style={{ animationDelay: "150ms" }}
+                  ></div>
+                  <div
+                    className="w-2 h-2 bg-white rounded-full animate-bounce"
+                    style={{ animationDelay: "300ms" }}
                   ></div>
                 </div>
+              )}
 
-                <p className="text-white/60 text-sm">
-                  {conversionProgress.total > 0
-                    ? `${Math.round(
-                        (conversionProgress.completed /
-                          conversionProgress.total) *
-                          100
-                      )}% complete`
-                    : "Preparing conversion..."}
-                </p>
-              </div>
-            )}
-
-            {/* Loading Animation for when not converting */}
-            {!isConverting && pages.length === 0 && (
-              <div className="flex justify-center space-x-1">
-                <div
-                  className="w-2 h-2 bg-white rounded-full animate-bounce"
-                  style={{ animationDelay: "0ms" }}
-                ></div>
-                <div
-                  className="w-2 h-2 bg-white rounded-full animate-bounce"
-                  style={{ animationDelay: "150ms" }}
-                ></div>
-                <div
-                  className="w-2 h-2 bg-white rounded-full animate-bounce"
-                  style={{ animationDelay: "300ms" }}
-                ></div>
-              </div>
-            )}
-
-            {/* Final loading state */}
-            {!isConverting && pages.length > 0 && (
-              <div className="text-white/60 text-sm">
-                Finalizing your experience...
-              </div>
-            )}
+              {/* Final loading state */}
+              {!isConverting && pages.length > 0 && (
+                <div className="text-white/60 text-sm">
+                  Finalizing your experience...
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
