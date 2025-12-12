@@ -36,6 +36,21 @@ const BACKGROUND_CONFIGS = {
     className: "bg-gradient-to-br from-[#5433FF] via-[#20BDFF] to-[#A5FECB]",
   },
 
+  test2: {
+    type: "gradient",
+    className: "bg-[#0f172a]",
+    layers: [
+      {
+        className:
+          "absolute bottom-0 left-0 right-0 top-0 bg-[linear-gradient(to_right,#ffffff1a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff1a_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_80%_50%_at_75%_25%,#000_70%,transparent_110%)]",
+      },
+      {
+        className:
+          "absolute bottom-0 left-0 right-0 top-0 bg-[radial-gradient(125%_125%_at_50%_10%,rgba(99,102,241,0.3)_40%,rgba(15,23,42,1)_100%)]",
+      },
+    ],
+  },
+
   // Shader Gradient backgrounds
   test: {
     type: "shader",
@@ -106,8 +121,9 @@ const DEFAULT_BACKGROUND = "royal-blue";
  * Renders either a CSS gradient or shader gradient background based on configuration
  *
  * @param {string} style - The background style identifier from the database
+ * @param {boolean} animate - Whether to animate shader gradients (default: true)
  */
-export const Background = ({ style }) => {
+export const Background = ({ style, animate = true }) => {
   const config =
     BACKGROUND_CONFIGS[style] || BACKGROUND_CONFIGS[DEFAULT_BACKGROUND];
 
@@ -116,12 +132,21 @@ export const Background = ({ style }) => {
     return (
       <div className="absolute inset-0 z-0">
         <ShaderGradientCanvas {...canvas}>
-          <ShaderGradient {...gradient} />
+          <ShaderGradient
+            {...gradient}
+            animate={animate ? gradient.animate : "off"}
+          />
         </ShaderGradientCanvas>
       </div>
     );
   }
 
   // Default to gradient type
-  return <div className={`absolute inset-0 z-0 ${config.className}`} />;
+  return (
+    <div className={`absolute inset-0 z-0 ${config.className}`}>
+      {config.layers?.map((layer, index) => (
+        <div key={index} className={layer.className} />
+      ))}
+    </div>
+  );
 };

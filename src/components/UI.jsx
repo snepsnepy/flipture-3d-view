@@ -185,7 +185,7 @@ export const UI = ({
       {/* Main Loader - Shows until flipbook is fully ready */}
       {(!isFullyLoaded || loading) && (
         <div className="fixed inset-0 z-50">
-          <Background style={backgroundGradient} />
+          <Background style={backgroundGradient} animate={false} />
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
               {/* Animated Logo/Icon */}
