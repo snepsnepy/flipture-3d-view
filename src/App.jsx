@@ -25,6 +25,13 @@ function App() {
   const [startTime] = useState(Date.now());
   const hasTrackedView = useRef(false);
 
+  // Helper function to check if subscription is active
+  const isSubscriptionActive = (subscriptionStatus) => {
+    if (!subscriptionStatus) return true; // If no status field, assume active
+    const inactiveStatuses = ["inactive", "canceled"];
+    return !inactiveStatuses.includes(subscriptionStatus.toLowerCase());
+  };
+
   const getData = async () => {
     try {
       setLoading(true);
@@ -53,11 +60,24 @@ function App() {
       }
 
       if (data) {
+        // Check subscription status and force default cover if inactive
+        const subscriptionActive = isSubscriptionActive(data.subscription_status);
+        const effectiveCoverOptions = subscriptionActive
+          ? data.cover_options
+          : "default";
+
         setPdfUrl(data.pdf_file_url);
         setFlipbookTitle(data.title || "Your Flipbook Title");
         setCompanyName(data.company_name || "");
-        setCoverOptions(data.cover_options || "default");
+        setCoverOptions(effectiveCoverOptions);
         setBackgroundGradient(data.background_gradient || "royal-blue");
+
+        // Log subscription status for debugging
+        if (!subscriptionActive) {
+          console.error(
+            `Subscription inactive (${data.subscription_status}) - using default cover`
+          );
+        }
       } else {
         throw new Error(`Flipbook with ID "${flipbookIdParam}" not found.`);
       }
