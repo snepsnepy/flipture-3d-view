@@ -43,7 +43,7 @@ function App() {
 
       if (!flipbookIdParam) {
         throw new Error(
-          "No flipbook ID provided in URL. Please add ?id=your-flipbook-id to the URL."
+          "No flipbook ID found with the given URL. Please check the URL and try again.",
         );
       }
 
@@ -61,7 +61,9 @@ function App() {
 
       if (data) {
         // Check subscription status and force default cover if inactive
-        const subscriptionActive = isSubscriptionActive(data.subscription_status);
+        const subscriptionActive = isSubscriptionActive(
+          data.subscription_status,
+        );
         const effectiveCoverOptions = subscriptionActive
           ? data.cover_options
           : "default";
@@ -75,7 +77,7 @@ function App() {
         // Log subscription status for debugging
         if (!subscriptionActive) {
           console.error(
-            `Subscription inactive (${data.subscription_status}) - using default cover`
+            `Subscription inactive (${data.subscription_status}) - using default cover`,
           );
         }
       } else {

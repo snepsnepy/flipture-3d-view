@@ -20,7 +20,7 @@ import { useFrame } from "@react-three/fiber";
 import { useTexture, useCursor } from "@react-three/drei";
 import { degToRad } from "three/src/math/MathUtils.js";
 
-const easingFactor = 0.5; // Controls the speed of the easing;
+const easingFactor = 0.45; // Controls the speed of the easing;
 const easingFactorFold = 0.3; // Controls the speed of the fold easing;
 const insideCurveStrenght = 0.18; // Controls the strength of the inside curve;
 const outsideCurveStrength = -0.002; // Controls the strength of the outside curve;
@@ -29,7 +29,7 @@ const turningCurveStrength = 0.05; // Controls the strength of the turning curve
 const PAGE_WIDTH = 1.28;
 const PAGE_HEIGHT = 1.71; // 4:3 Aspect Ratio
 const PAGE_DEPTH = 0.003;
-const PAGE_SEGMENTS = 50;
+const PAGE_SEGMENTS = 35;
 const SEGMENT_WIDTH = PAGE_WIDTH / PAGE_SEGMENTS;
 
 const pageGeometry = new BoxGeometry(
@@ -37,7 +37,7 @@ const pageGeometry = new BoxGeometry(
   PAGE_HEIGHT,
   PAGE_DEPTH,
   PAGE_SEGMENTS,
-  2
+  2,
 );
 
 pageGeometry.translate(PAGE_WIDTH / 2, 0, 0);
@@ -62,11 +62,11 @@ for (let i = 0; i < position.count; i++) {
 // Set the attributes after the loop
 pageGeometry.setAttribute(
   "skinIndex",
-  new Uint16BufferAttribute(skinIndexes, 4)
+  new Uint16BufferAttribute(skinIndexes, 4),
 );
 pageGeometry.setAttribute(
   "skinWeight",
-  new Float32BufferAttribute(skinWeights, 4)
+  new Float32BufferAttribute(skinWeights, 4),
 );
 
 const whiteColor = new Color("white");
@@ -276,7 +276,7 @@ const Page = ({
       skinnedMeshRef.current.material[5].emissiveIntensity = MathUtils.lerp(
         skinnedMeshRef.current.material[4].emissiveIntensity,
         emissiveIntensity,
-        0.1
+        0.1,
       );
 
     if (lastOpened.current !== opened) {
@@ -323,7 +323,7 @@ const Page = ({
         "y",
         rotationAngle,
         easingFactor,
-        delta
+        delta,
       );
 
       const foldIntensity =
@@ -336,7 +336,7 @@ const Page = ({
         "x",
         foldRotationAngle * foldIntensity,
         easingFactorFold,
-        delta
+        delta,
       );
     }
   });
@@ -590,7 +590,7 @@ export const Book = ({ pages = [], cover = "default", ...props }) => {
             () => {
               goToPage();
             },
-            Math.abs(page - delayedPage) > 2 ? 50 : 150
+            Math.abs(page - delayedPage) > 2 ? 50 : 150,
           );
 
           if (page > delayedPage) {

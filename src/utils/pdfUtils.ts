@@ -55,7 +55,7 @@ async function convertPage(
   }).promise;
 
   // Convert canvas to data URL
-  const dataUrl = canvas.toDataURL("image/webp", 0.92);
+  const dataUrl = canvas.toDataURL("image/png", 1);
 
   return {
     pageNumber: pageNum,
@@ -126,7 +126,7 @@ export async function PDFtoIMG(
   options: PDFConversionOptions = {},
 ): Promise<PDFPage[]> {
   const {
-    scale = 1.5,
+    scale = 2,
     useSystemFonts = true,
     maxConcurrentPages = 3,
     onProgress,

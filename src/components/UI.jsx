@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import { atom, useAtom } from "jotai";
 import { PDFtoIMG } from "../utils/pdfUtils";
 import { trackPageView, trackZoom } from "../utils/googleAnalytics";
-import { Background } from "./Background";
+import { Background, getBackgroundTheme } from "./Background";
+import { FlipbookLoader } from "./FlipbookLoader";
 
 export const pageAtom = atom(0);
 export const scrollProgressAtom = atom(0);
@@ -33,6 +34,11 @@ export const UI = ({
   const [isFullyLoaded, setIsFullyLoaded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
+  const isDark = getBackgroundTheme(backgroundGradient) === "dark";
+  const textColor = isDark ? "text-white" : "text-black/90";
+  const textColorMuted = isDark ? "text-white/80" : "text-black/60";
+  const iconFill = isDark ? "#ffffff" : "#000000";
+
   // Wrapper functions for tracking
   const handlePageChange = React.useCallback(
     (newPage) => {
@@ -41,7 +47,7 @@ export const UI = ({
         trackPageView(flipbookId, newPage); // Google Analytics
       }
     },
-    [setPage, flipbookId]
+    [setPage, flipbookId],
   );
 
   const handleZoomChange = React.useCallback(
@@ -51,7 +57,7 @@ export const UI = ({
         trackZoom(flipbookId, action, Math.round(newZoom * 100)); // Google Analytics
       }
     },
-    [setZoom, flipbookId]
+    [setZoom, flipbookId],
   );
 
   // Smart text breaking: break by spaces if available, otherwise break-all
@@ -128,6 +134,55 @@ export const UI = ({
     return () => window.removeEventListener("resize", checkIsMobile);
   }, []);
 
+  // Swipe left/right to navigate pages on mobile
+  React.useEffect(() => {
+    if (!isMobile) return;
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    const handleTouchStart = (e) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    };
+
+    const handleTouchEnd = (e) => {
+      const deltaX = e.changedTouches[0].clientX - touchStartX;
+      const deltaY = e.changedTouches[0].clientY - touchStartY;
+
+      // Ignore vertical swipes and swipes shorter than 50px
+      if (Math.abs(deltaX) < Math.abs(deltaY) || Math.abs(deltaX) < 50) return;
+
+      if (deltaX < 0) {
+        // Swipe left → next page
+        if (page > 0 && page < pages.length && pageFocus === "left") {
+          setPageFocus("right");
+        } else {
+          const newPage = Math.min(pages.length, page + 1);
+          handlePageChange(newPage);
+          setPageFocus(page === 0 && newPage === 1 ? "right" : "left");
+        }
+      } else {
+        // Swipe right → previous page
+        if (page > 0 && page < pages.length && pageFocus === "right") {
+          setPageFocus("left");
+        } else {
+          const newPage = Math.max(0, page - 1);
+          handlePageChange(newPage);
+          setPageFocus("right");
+        }
+      }
+    };
+
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchend", handleTouchEnd, { passive: true });
+
+    return () => {
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [isMobile, page, pages.length, pageFocus, handlePageChange, setPageFocus]);
+
   // Mark as fully loaded when pages are ready and give a small delay for smooth transition
   React.useEffect(() => {
     if (pages.length > 0 && !isConverting) {
@@ -184,99 +239,13 @@ export const UI = ({
     <>
       {/* Main Loader - Shows until flipbook is fully ready */}
       {(!isFullyLoaded || loading) && (
-        <div className="fixed inset-0 z-50">
-          <Background style={backgroundGradient} animate={false} />
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
-              {/* Animated Logo/Icon */}
-              <div className="relative mb-8">
-                <div className="w-24 h-24 mx-auto relative">
-                  {/* Outer rotating ring */}
-                  <div className="absolute inset-0 border-4 border-white/20 rounded-full animate-spin"></div>
-                  {/* Inner pulsing circle */}
-                  <div className="absolute inset-2 border-4 border-white rounded-full animate-pulse"></div>
-                  {/* Center dot */}
-                  <div className="absolute top-1/2 left-1/2 w-3 h-3 bg-white rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
-                </div>
-              </div>
-
-              {/* Loading Text */}
-              <h2 className="text-3xl font-bold text-white mb-4 font-poppins">
-                {loading
-                  ? "Loading Flipbook Data..."
-                  : isConverting
-                  ? "Preparing Your Flipbook"
-                  : "Loading..."}
-              </h2>
-
-              {/* Progress Indicator */}
-              {isConverting && (
-                <div className="max-w-md mx-auto">
-                  <div className="flex justify-between text-white/80 text-sm mb-2">
-                    <span>Converting PDF</span>
-                    <span>
-                      {conversionProgress.total > 0
-                        ? `${conversionProgress.completed}/${conversionProgress.total}`
-                        : "Loading..."}
-                    </span>
-                  </div>
-
-                  {/* Progress Bar */}
-                  <div className="w-full bg-white/20 rounded-full h-2 mb-4">
-                    <div
-                      className="bg-gradient-to-r from-[#FFCC00] to-purple-400 h-2 rounded-full transition-all duration-500 ease-out"
-                      style={{
-                        width:
-                          conversionProgress.total > 0
-                            ? `${
-                                (conversionProgress.completed /
-                                  conversionProgress.total) *
-                                100
-                              }%`
-                            : "0%",
-                      }}
-                    ></div>
-                  </div>
-
-                  <p className="text-white/60 text-sm">
-                    {conversionProgress.total > 0
-                      ? `${Math.round(
-                          (conversionProgress.completed /
-                            conversionProgress.total) *
-                            100
-                        )}% complete`
-                      : "Preparing conversion..."}
-                  </p>
-                </div>
-              )}
-
-              {/* Loading Animation for when not converting */}
-              {!isConverting && pages.length === 0 && (
-                <div className="flex justify-center space-x-1">
-                  <div
-                    className="w-2 h-2 bg-white rounded-full animate-bounce"
-                    style={{ animationDelay: "0ms" }}
-                  ></div>
-                  <div
-                    className="w-2 h-2 bg-white rounded-full animate-bounce"
-                    style={{ animationDelay: "150ms" }}
-                  ></div>
-                  <div
-                    className="w-2 h-2 bg-white rounded-full animate-bounce"
-                    style={{ animationDelay: "300ms" }}
-                  ></div>
-                </div>
-              )}
-
-              {/* Final loading state */}
-              {!isConverting && pages.length > 0 && (
-                <div className="text-white/60 text-sm">
-                  Finalizing your experience...
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        <FlipbookLoader
+          backgroundGradient={backgroundGradient}
+          loading={loading}
+          isConverting={isConverting}
+          conversionProgress={conversionProgress}
+          pagesReady={pages.length > 0}
+        />
       )}
 
       {/* Error Message */}
@@ -284,10 +253,10 @@ export const UI = ({
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 text-center">
             <div className="text-red-500 text-6xl mb-4">⚠️</div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-4">
+            <h3 className="text-2xl font-bold text-black mb-4">
               {error ? "Failed to Load Flipbook" : "Conversion Failed"}
             </h3>
-            <p className="text-gray-600 mb-6">{error || conversionError}</p>
+            <p className="text-black/80 mb-6">{error || conversionError}</p>
             <button
               onClick={() => window.location.reload()}
               className="bg-red-500 text-white px-8 py-3 rounded-lg hover:bg-red-600 transition-colors font-semibold"
@@ -306,7 +275,9 @@ export const UI = ({
             opacity: isMobile ? 1 - scrollProgress : 1,
           }}
         >
-          <h1 className="font-poppins text-white text-base leading-4 md:text-2xl tracking-wide drop-shadow-lg text-center md:text-left">
+          <h1
+            className={`font-poppins text-base leading-4 md:text-2xl tracking-wide drop-shadow-lg text-center md:text-left ${textColor}`}
+          >
             {companyName}
           </h1>
         </div>
@@ -352,7 +323,7 @@ export const UI = ({
       >
         {/* FLIPBOOK TITLE */}
         <h1
-          className={`shrink-0 text-white px-4 md:px-10 text-4xl leading-8 md:text-[150px] md:leading-[150px] font-delight font-black -tracking-[0.1rem] pt-4 max-w-[380px] md:max-w-6xl mx-auto ${
+          className={`shrink-0 px-4 md:px-10 text-4xl leading-8 md:text-[150px] md:leading-[150px] font-delight font-black -tracking-[0.1rem] pt-4 max-w-[380px] md:max-w-6xl mx-auto ${textColor} ${
             titleHasSpaces ? "" : "break-all"
           }`}
         >
@@ -361,7 +332,9 @@ export const UI = ({
 
         {/* CTA */}
         <div className=" flex flex-row items-center gap-x-2">
-          <p className="text-white text-xs md:text-sm leading-3 font-poppins tracking-wide">
+          <p
+            className={`text-xs md:text-sm leading-3 font-poppins tracking-wide ${textColorMuted}`}
+          >
             <span className="md:hidden">Swipe up to start reading</span>
             <span className="hidden md:inline">
               Scroll down to start reading
@@ -376,7 +349,7 @@ export const UI = ({
               viewBox="0 0 24 24"
             >
               <path
-                fill="#fff"
+                fill={iconFill}
                 d="M5.325 3.95q-.175.625-.25 1.263T5 6.5q0 1.575.45 3.038t1.3 2.762q.2.275.175.6t-.25.55t-.525.2t-.5-.3q-1.05-1.5-1.6-3.25T3.5 6.5q0-.675.075-1.35T3.8 3.8L2.575 5.025q-.225.225-.525.225t-.525-.225T1.3 4.5t.225-.525L3.8 1.7q.3-.3.7-.3t.7.3l2.275 2.275Q7.7 4.2 7.7 4.5t-.225.525t-.525.213t-.525-.213zM16.45 20.825q-.575.2-1.162.188t-1.138-.288L8.5 18.1q-.375-.175-.525-.562T8 16.775l.05-.1q.25-.5.7-.812t1-.363l1.7-.125L8.65 7.7q-.15-.4.025-.763t.575-.512t.762.025t.513.575l3.25 8.925q.175.475-.1.888t-.775.462l-1.175.075L15 18.9q.175.075.375.088t.375-.038l3.925-1.425q.775-.275 1.125-1.038t.075-1.537L19.5 11.2q-.15-.4.025-.763t.575-.512t.762.025t.513.575l1.375 3.75q.575 1.575-.113 3.062T20.375 19.4zm-3-11.675q.4-.15.763.025t.512.575l1.025 2.8q.15.4-.025.775t-.575.525t-.775-.025t-.525-.575l-1-2.825q-.15-.4.025-.763t.575-.512m3.15-.075q.4-.15.763.025t.512.575l.675 1.875q.15.4-.012.763t-.563.512t-.775-.025t-.525-.575L16 10.35q-.15-.4.025-.762t.575-.513m.375 6.05"
               />
             </svg>
@@ -389,7 +362,7 @@ export const UI = ({
               viewBox="0 0 16 16"
             >
               <path
-                fill="#fff"
+                fill={iconFill}
                 fillRule="evenodd"
                 d="M10 14a2 2 0 1 1-4 0a2 2 0 0 1 4 0m1.78-8.841a.75.75 0 0 0-1.06 0l-1.97 1.97V.75a.75.75 0 0 0-1.5 0v6.379l-1.97-1.97a.75.75 0 0 0-1.06 1.06l3.25 3.25L8 10l.53-.53l3.25-3.25a.75.75 0 0 0 0-1.061"
                 clipRule="evenodd"
@@ -558,8 +531,8 @@ export const UI = ({
             {page === 0
               ? "Cover"
               : page === pages.length
-              ? "Back"
-              : `Page ${page}`}
+                ? "Back"
+                : `Page ${page}`}
           </div>
 
           {/* Next Page Button */}
