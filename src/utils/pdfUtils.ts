@@ -31,7 +31,7 @@ const pageCache = new Map<string, PDFPage[]>();
 async function convertPage(
   doc: any,
   pageNum: number,
-  scale: number
+  scale: number,
 ): Promise<PDFPage> {
   const page = await doc.getPage(pageNum);
   const viewport = page.getViewport({ scale });
@@ -55,7 +55,7 @@ async function convertPage(
   }).promise;
 
   // Convert canvas to data URL
-  const dataUrl = canvas.toDataURL("image/png", 1.0);
+  const dataUrl = canvas.toDataURL("image/png", 1);
 
   return {
     pageNumber: pageNum,
@@ -79,7 +79,7 @@ async function processPagesInBatches(
   totalPages: number,
   scale: number,
   maxConcurrent: number,
-  onProgress?: (completed: number, total: number) => void
+  onProgress?: (completed: number, total: number) => void,
 ): Promise<PDFPage[]> {
   const pages: PDFPage[] = new Array(totalPages);
   let completed = 0;
@@ -101,7 +101,7 @@ async function processPagesInBatches(
           throw new Error(
             `Failed to convert page ${pageNum}: ${
               error instanceof Error ? error.message : "Unknown error"
-            }`
+            }`,
           );
         });
 
@@ -123,7 +123,7 @@ async function processPagesInBatches(
  */
 export async function PDFtoIMG(
   url: string,
-  options: PDFConversionOptions = {}
+  options: PDFConversionOptions = {},
 ): Promise<PDFPage[]> {
   const {
     scale = 2,
@@ -151,7 +151,7 @@ export async function PDFtoIMG(
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(
-        `Failed to fetch PDF: ${response.status} ${response.statusText}`
+        `Failed to fetch PDF: ${response.status} ${response.statusText}`,
       );
     }
 
@@ -170,7 +170,7 @@ export async function PDFtoIMG(
       doc.numPages,
       scale,
       maxConcurrentPages,
-      onProgress
+      onProgress,
     );
 
     // Cache the results if enabled
@@ -186,7 +186,7 @@ export async function PDFtoIMG(
     throw new Error(
       `PDF conversion failed: ${
         error instanceof Error ? error.message : "Unknown error"
-      }`
+      }`,
     );
   }
 }
