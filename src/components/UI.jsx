@@ -215,8 +215,9 @@ export const UI = ({
           onProgress: (completed, total) => {
             setConversionProgress({ completed, total });
           },
-          maxConcurrentPages: 3, // Process 3 pages at once
-          enableCaching: true, // Cache for faster subsequent loads
+          scale: isMobile ? 0.5 : 2,
+          maxConcurrentPages: isMobile ? 1 : 3,
+          enableCaching: true,
         });
 
         const images = pages.map((page) => page.dataUrl);

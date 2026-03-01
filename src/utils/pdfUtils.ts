@@ -54,8 +54,8 @@ async function convertPage(
     canvas: canvas,
   }).promise;
 
-  // Convert canvas to data URL
-  const dataUrl = canvas.toDataURL("image/png", 1);
+  // WebP offers the best size/quality ratio; falls back to PNG in unsupported environments
+  const dataUrl = canvas.toDataURL("image/webp", 0.85);
 
   return {
     pageNumber: pageNum,
