@@ -216,6 +216,7 @@ export const UI = ({
             setConversionProgress({ completed, total });
           },
           scale: isMobile ? 0.5 : 2,
+          maxDimension: isMobile ? 512 : 2048,
           maxConcurrentPages: isMobile ? 1 : 3,
           enableCaching: true,
         });

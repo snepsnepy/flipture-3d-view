@@ -29,7 +29,7 @@ const turningCurveStrength = 0.05; // Controls the strength of the turning curve
 const PAGE_WIDTH = 1.28;
 const PAGE_HEIGHT = 1.71; // 4:3 Aspect Ratio
 const PAGE_DEPTH = 0.003;
-const PAGE_SEGMENTS = 35;
+const PAGE_SEGMENTS = 65;
 const SEGMENT_WIDTH = PAGE_WIDTH / PAGE_SEGMENTS;
 
 const pageGeometry = new BoxGeometry(
@@ -102,99 +102,103 @@ const Page = ({
 
   // Load textures based on whether they are data URLs or file paths
   useEffect(() => {
-    const isMobileDevice = window.innerWidth < 768;
-    const isCover = number === 0 || number === renderPages.length - 1;
+    const loader = new TextureLoader();
 
-    // On mobile, stagger texture loading across pages to avoid all 40 textures
-    // decoding simultaneously. Covers load immediately; inner pages are delayed
-    // by 150ms × index so the peak RAM spike is spread over several seconds.
-    const delay = isMobileDevice && !isCover ? number * 150 : 0;
+    // Create blank white texture for blank pages
+    const createBlankTexture = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 512;
+      canvas.height = 512;
+      const context = canvas.getContext("2d");
+      context.fillStyle = "#ffffff";
+      context.fillRect(0, 0, 512, 512);
+      return canvas.toDataURL();
+    };
 
-    const timer = setTimeout(() => {
-      const loader = new TextureLoader();
+    // Load front texture
+    let frontTexture = front;
 
-      const createBlankTexture = () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = 512;
-        canvas.height = 512;
-        const context = canvas.getContext("2d");
-        context.fillStyle = "#ffffff";
-        context.fillRect(0, 0, 512, 512);
-        return canvas.toDataURL();
-      };
+    // Determine if we should use PDF front cover based on cover option
+    const usePdfFrontCover =
+      cover === "first-last-page" || cover === "first-page";
 
-      // Load front texture
-      let frontTexture = front;
+    // If using PDF front cover and this is the front cover (number === 0),
+    // use the first PDF page instead of the default cover
+    if (usePdfFrontCover && number === 0 && pages.length > 1) {
+      // Use the front texture from the second page (index 1) which is the first PDF page
+      frontTexture = pages[1]?.front || front;
+    }
 
-      const usePdfFrontCover =
-        cover === "first-last-page" || cover === "first-page";
+    if (frontTexture === "blank-page") {
+      loader.load(createBlankTexture(), setPicture);
+    } else if (frontTexture.startsWith("data:")) {
+      loader.load(frontTexture, setPicture);
+    } else {
+      loader.load(`/textures/${frontTexture}.jpg`, setPicture);
+    }
 
-      if (usePdfFrontCover && number === 0 && pages.length > 1) {
-        frontTexture = pages[1]?.front || front;
-      }
+    // Load back texture
+    let backTexture = back;
 
-      if (frontTexture === "blank-page") {
-        loader.load(createBlankTexture(), setPicture);
-      } else if (frontTexture.startsWith("data:")) {
-        loader.load(frontTexture, setPicture);
-      } else {
-        loader.load(`/textures/${frontTexture}.jpg`, setPicture);
-      }
+    // Determine if we should use PDF back cover based on cover option
+    const usePdfBackCover = cover === "first-last-page";
 
-      // Load back texture
-      let backTexture = back;
+    // If using PDF back cover and this is the back cover (last page),
+    // use the last PDF page instead of the default back cover
+    if (
+      usePdfBackCover &&
+      number === renderPages.length - 1 &&
+      pages.length > 1
+    ) {
+      // Find the last PDF page from the original pages structure
+      let lastPdfPage = null;
 
-      const usePdfBackCover = cover === "first-last-page";
-
+      // The last PDF page can be in two places depending on whether we have odd/even number of PDF pages:
+      // 1. If the second-to-last page has a PDF page in back position
       if (
-        usePdfBackCover &&
-        number === renderPages.length - 1 &&
-        pages.length > 1
+        pages[pages.length - 2]?.back &&
+        pages[pages.length - 2].back.startsWith("data:")
       ) {
-        let lastPdfPage = null;
-
-        if (
-          pages[pages.length - 2]?.back &&
-          pages[pages.length - 2].back.startsWith("data:")
-        ) {
-          lastPdfPage = pages[pages.length - 2].back;
-        } else if (
-          pages[pages.length - 1]?.front &&
-          pages[pages.length - 1].front.startsWith("data:")
-        ) {
-          lastPdfPage = pages[pages.length - 1].front;
-        } else {
-          for (let i = pages.length - 1; i >= 1; i--) {
-            if (pages[i].back && pages[i].back.startsWith("data:")) {
-              lastPdfPage = pages[i].back;
-              break;
-            }
-            if (pages[i].front && pages[i].front.startsWith("data:")) {
-              lastPdfPage = pages[i].front;
-              break;
-            }
+        lastPdfPage = pages[pages.length - 2].back;
+      }
+      // 2. If the last page has a PDF page in front position (odd number of PDF pages)
+      else if (
+        pages[pages.length - 1]?.front &&
+        pages[pages.length - 1].front.startsWith("data:")
+      ) {
+        lastPdfPage = pages[pages.length - 1].front;
+      }
+      // 3. Fallback: look backwards through all pages to find the last PDF content
+      else {
+        for (let i = pages.length - 1; i >= 1; i--) {
+          if (pages[i].back && pages[i].back.startsWith("data:")) {
+            lastPdfPage = pages[i].back;
+            break;
+          }
+          if (pages[i].front && pages[i].front.startsWith("data:")) {
+            lastPdfPage = pages[i].front;
+            break;
           }
         }
-
-        if (lastPdfPage) {
-          backTexture = lastPdfPage;
-        }
       }
 
-      if (backTexture === "blank-page") {
-        loader.load(createBlankTexture(), setPicture2);
-      } else if (backTexture.startsWith("data:")) {
-        loader.load(backTexture, setPicture2);
-      } else {
-        loader.load(`/textures/${backTexture}.jpg`, setPicture2);
+      if (lastPdfPage) {
+        backTexture = lastPdfPage;
       }
+    }
 
-      if (number === 0 || number === pages.length - 1) {
-        loader.load("/textures/book-cover-roughness.jpg", setPictureRoughness);
-      }
-    }, delay);
+    if (backTexture === "blank-page") {
+      loader.load(createBlankTexture(), setPicture2);
+    } else if (backTexture.startsWith("data:")) {
+      loader.load(backTexture, setPicture2);
+    } else {
+      loader.load(`/textures/${backTexture}.jpg`, setPicture2);
+    }
 
-    return () => clearTimeout(timer);
+    // Load roughness texture for covers
+    if (number === 0 || number === pages.length - 1) {
+      loader.load("/textures/book-cover-roughness.jpg", setPictureRoughness);
+    }
   }, [front, back, number, pages.length, cover, pages, renderPages]);
 
   // Set color space when textures are loaded
