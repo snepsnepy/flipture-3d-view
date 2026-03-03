@@ -226,7 +226,7 @@ export const UI = ({
         setIsConverting(false);
       } catch (error) {
         console.error("Error processing PDF:", error);
-        setConversionError(error.message);
+        setConversionError("Failed to process PDF. Please try again.");
         setIsConverting(false);
       }
     };
@@ -258,7 +258,11 @@ export const UI = ({
             <h3 className="text-2xl font-bold text-black mb-4">
               {error ? "Failed to Load Flipbook" : "Conversion Failed"}
             </h3>
-            <p className="text-black/80 mb-6">{error || conversionError}</p>
+            <p className="text-black/80 mb-6">
+              {error
+                ? "Failed to load the flipbook. Please try again."
+                : conversionError}
+            </p>
             <button
               onClick={() => window.location.reload()}
               className="bg-red-500 text-white px-8 py-3 rounded-lg hover:bg-red-600 transition-colors font-semibold"
