@@ -329,7 +329,7 @@ export const UI = ({
       >
         {/* FLIPBOOK TITLE */}
         <h1
-          className={`shrink-0 px-4 md:px-10 text-4xl leading-8 md:text-[150px] md:leading-[150px] font-delight font-black -tracking-[0.1rem] pt-4 max-w-[380px] md:max-w-6xl mx-auto ${textColor} ${
+          className={`shrink-0 px-4 md:px-10 text-6xl leading-8 md:text-[150px] md:leading-[150px] font-delight font-black -tracking-[0.1rem] pt-4 max-w-[380px] md:max-w-6xl mx-auto ${textColor} ${
             titleHasSpaces ? "" : "break-all"
           }`}
         >
