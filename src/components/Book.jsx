@@ -307,7 +307,7 @@ const Page = ({
         outsideCurveStrength * outsideCurveIntensity * targetRotation +
         turningCurveStrength * turningIntensity * targetRotation;
 
-      let foldRotationAngle = degToRad(Math.sign(targetRotation) * 2);
+      let foldRotationAngle = degToRad(Math.sign(targetRotation) * 2.2);
 
       if (bookClosed) {
         if (i === 0) {
@@ -328,7 +328,7 @@ const Page = ({
 
       const foldIntensity =
         i > 8
-          ? Math.sin(i * Math.PI * (1 / bones.length) - 0.3) * turningTime // Adjusted offset for 40 segments
+          ? Math.sin(i * Math.PI * (1 / bones.length) - 2) * turningTime // Adjusted offset for 40 segments
           : 0;
 
       easing.dampAngle(
