@@ -297,8 +297,8 @@ const Page = ({
     for (let i = 0; i < bones.length; i++) {
       const target = i === 0 ? group.current : bones[i];
 
-      const insideCurveIntensity = i < 8 ? Math.sin(i * 0.2 + 0.25) : 0;
-      const outsideCurveIntensity = i >= 8 ? Math.cos(i * 0.1 + 0.35) : 0;
+      const insideCurveIntensity = i < 8 ? Math.sin(i * 0.3 + 0.25) : 0;
+      const outsideCurveIntensity = i >= 8 ? Math.cos(i * 0.5 + 0.35) : 0;
       const turningIntensity =
         Math.sin(i * Math.PI * (1 / bones.length)) * turningTime;
 
