@@ -365,11 +365,6 @@ const Page = ({
         const isMobile = window.innerWidth < 768;
 
         if (isMobile && opened && page > 0 && page < renderPages.length) {
-          // On mobile, for opened pages, check if we should focus or turn page
-          const isEvenPage = page % 2 === 0;
-          const isLeftPageVisible = isEvenPage;
-          const isRightPageVisible = !isEvenPage;
-
           // Determine which page was clicked based on the page number
           const isClickingLeftPage = number === page - 1;
           const isClickingRightPage = number === page;

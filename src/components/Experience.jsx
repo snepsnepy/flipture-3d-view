@@ -69,7 +69,7 @@ export const Experience = ({ coverOptions = "default" }) => {
 
       // Initial position: [0, -1.9, 0]
       // Target position: [0, 0, 0] (centered on Y-axis)
-      const initialY = -1.05;
+      const initialY = isMobile ? -1.05 : -1.5;
       const targetY = 0;
 
       // Interpolate Y position based on scroll progress
