@@ -135,53 +135,54 @@ export const UI = ({
   }, []);
 
   // Swipe left/right to navigate pages on mobile
-  React.useEffect(() => {
-    if (!isMobile) return;
+  // ?INFO: Swipe Effects removed for the time being
+  // React.useEffect(() => {
+  //   if (!isMobile) return;
 
-    let touchStartX = 0;
-    let touchStartY = 0;
+  //   let touchStartX = 0;
+  //   let touchStartY = 0;
 
-    const handleTouchStart = (e) => {
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-    };
+  //   const handleTouchStart = (e) => {
+  //     touchStartX = e.touches[0].clientX;
+  //     touchStartY = e.touches[0].clientY;
+  //   };
 
-    const handleTouchEnd = (e) => {
-      const deltaX = e.changedTouches[0].clientX - touchStartX;
-      const deltaY = e.changedTouches[0].clientY - touchStartY;
+  //   const handleTouchEnd = (e) => {
+  //     const deltaX = e.changedTouches[0].clientX - touchStartX;
+  //     const deltaY = e.changedTouches[0].clientY - touchStartY;
 
-      // Ignore vertical swipes and swipes shorter than 50px
-      if (Math.abs(deltaX) < Math.abs(deltaY) || Math.abs(deltaX) < 50) return;
+  //     // Ignore vertical swipes and swipes shorter than 50px
+  //     if (Math.abs(deltaX) < Math.abs(deltaY) || Math.abs(deltaX) < 50) return;
 
-      if (deltaX < 0) {
-        // Swipe left → next page
-        if (page > 0 && page < pages.length && pageFocus === "left") {
-          setPageFocus("right");
-        } else {
-          const newPage = Math.min(pages.length, page + 1);
-          handlePageChange(newPage);
-          setPageFocus(page === 0 && newPage === 1 ? "right" : "left");
-        }
-      } else {
-        // Swipe right → previous page
-        if (page > 0 && page < pages.length && pageFocus === "right") {
-          setPageFocus("left");
-        } else {
-          const newPage = Math.max(0, page - 1);
-          handlePageChange(newPage);
-          setPageFocus("right");
-        }
-      }
-    };
+  //     if (deltaX < 0) {
+  //       // Swipe left → next page
+  //       if (page > 0 && page < pages.length && pageFocus === "left") {
+  //         setPageFocus("right");
+  //       } else {
+  //         const newPage = Math.min(pages.length, page + 1);
+  //         handlePageChange(newPage);
+  //         setPageFocus(page === 0 && newPage === 1 ? "right" : "left");
+  //       }
+  //     } else {
+  //       // Swipe right → previous page
+  //       if (page > 0 && page < pages.length && pageFocus === "right") {
+  //         setPageFocus("left");
+  //       } else {
+  //         const newPage = Math.max(0, page - 1);
+  //         handlePageChange(newPage);
+  //         setPageFocus("right");
+  //       }
+  //     }
+  //   };
 
-    window.addEventListener("touchstart", handleTouchStart, { passive: true });
-    window.addEventListener("touchend", handleTouchEnd, { passive: true });
+  //   window.addEventListener("touchstart", handleTouchStart, { passive: true });
+  //   window.addEventListener("touchend", handleTouchEnd, { passive: true });
 
-    return () => {
-      window.removeEventListener("touchstart", handleTouchStart);
-      window.removeEventListener("touchend", handleTouchEnd);
-    };
-  }, [isMobile, page, pages.length, pageFocus, handlePageChange, setPageFocus]);
+  //   return () => {
+  //     window.removeEventListener("touchstart", handleTouchStart);
+  //     window.removeEventListener("touchend", handleTouchEnd);
+  //   };
+  // }, [isMobile, page, pages.length, pageFocus, handlePageChange, setPageFocus]);
 
   // Mark as fully loaded when pages are ready and give a small delay for smooth transition
   React.useEffect(() => {
