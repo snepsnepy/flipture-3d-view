@@ -29,7 +29,7 @@ const turningCurveStrength = 0.05; // Controls the strength of the turning curve
 const PAGE_WIDTH = 1.28;
 const PAGE_HEIGHT = 1.71; // 4:3 Aspect Ratio
 const PAGE_DEPTH = 0.003;
-const PAGE_SEGMENTS = 35;
+const PAGE_SEGMENTS = 68;
 const SEGMENT_WIDTH = PAGE_WIDTH / PAGE_SEGMENTS;
 
 const pageGeometry = new BoxGeometry(
@@ -297,8 +297,8 @@ const Page = ({
     for (let i = 0; i < bones.length; i++) {
       const target = i === 0 ? group.current : bones[i];
 
-      const insideCurveIntensity = i < 8 ? Math.sin(i * 0.2 + 0.25) : 0;
-      const outsideCurveIntensity = i >= 8 ? Math.cos(i * 0.1 + 0.35) : 0;
+      const insideCurveIntensity = i < 8 ? Math.sin(i * 0.3 + 0.25) : 0;
+      const outsideCurveIntensity = i >= 8 ? Math.cos(i * 0.5 + 0.35) : 0;
       const turningIntensity =
         Math.sin(i * Math.PI * (1 / bones.length)) * turningTime;
 
@@ -307,7 +307,7 @@ const Page = ({
         outsideCurveStrength * outsideCurveIntensity * targetRotation +
         turningCurveStrength * turningIntensity * targetRotation;
 
-      let foldRotationAngle = degToRad(Math.sign(targetRotation) * 2);
+      let foldRotationAngle = degToRad(Math.sign(targetRotation) * 2.2);
 
       if (bookClosed) {
         if (i === 0) {
@@ -328,7 +328,7 @@ const Page = ({
 
       const foldIntensity =
         i > 8
-          ? Math.sin(i * Math.PI * (1 / bones.length) - 0.3) * turningTime // Adjusted offset for 40 segments
+          ? Math.sin(i * Math.PI * (1 / bones.length) - 2) * turningTime // Adjusted offset for 40 segments
           : 0;
 
       easing.dampAngle(
@@ -365,11 +365,6 @@ const Page = ({
         const isMobile = window.innerWidth < 768;
 
         if (isMobile && opened && page > 0 && page < renderPages.length) {
-          // On mobile, for opened pages, check if we should focus or turn page
-          const isEvenPage = page % 2 === 0;
-          const isLeftPageVisible = isEvenPage;
-          const isRightPageVisible = !isEvenPage;
-
           // Determine which page was clicked based on the page number
           const isClickingLeftPage = number === page - 1;
           const isClickingRightPage = number === page;

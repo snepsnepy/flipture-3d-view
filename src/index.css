@@ -70,7 +70,8 @@
 
 #root {
   width: 100vw;
-  height: 100vh;
+  height: 100vh; /* Fallback for older browsers */
+  height: 100dvh; /* Accounts for mobile browser chrome (address bar, nav bar) */
 }
 
 body {

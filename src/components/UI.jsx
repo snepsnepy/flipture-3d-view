@@ -135,53 +135,54 @@ export const UI = ({
   }, []);
 
   // Swipe left/right to navigate pages on mobile
-  React.useEffect(() => {
-    if (!isMobile) return;
+  // ?INFO: Swipe Effects removed for the time being
+  // React.useEffect(() => {
+  //   if (!isMobile) return;
 
-    let touchStartX = 0;
-    let touchStartY = 0;
+  //   let touchStartX = 0;
+  //   let touchStartY = 0;
 
-    const handleTouchStart = (e) => {
-      touchStartX = e.touches[0].clientX;
-      touchStartY = e.touches[0].clientY;
-    };
+  //   const handleTouchStart = (e) => {
+  //     touchStartX = e.touches[0].clientX;
+  //     touchStartY = e.touches[0].clientY;
+  //   };
 
-    const handleTouchEnd = (e) => {
-      const deltaX = e.changedTouches[0].clientX - touchStartX;
-      const deltaY = e.changedTouches[0].clientY - touchStartY;
+  //   const handleTouchEnd = (e) => {
+  //     const deltaX = e.changedTouches[0].clientX - touchStartX;
+  //     const deltaY = e.changedTouches[0].clientY - touchStartY;
 
-      // Ignore vertical swipes and swipes shorter than 50px
-      if (Math.abs(deltaX) < Math.abs(deltaY) || Math.abs(deltaX) < 50) return;
+  //     // Ignore vertical swipes and swipes shorter than 50px
+  //     if (Math.abs(deltaX) < Math.abs(deltaY) || Math.abs(deltaX) < 50) return;
 
-      if (deltaX < 0) {
-        // Swipe left → next page
-        if (page > 0 && page < pages.length && pageFocus === "left") {
-          setPageFocus("right");
-        } else {
-          const newPage = Math.min(pages.length, page + 1);
-          handlePageChange(newPage);
-          setPageFocus(page === 0 && newPage === 1 ? "right" : "left");
-        }
-      } else {
-        // Swipe right → previous page
-        if (page > 0 && page < pages.length && pageFocus === "right") {
-          setPageFocus("left");
-        } else {
-          const newPage = Math.max(0, page - 1);
-          handlePageChange(newPage);
-          setPageFocus("right");
-        }
-      }
-    };
+  //     if (deltaX < 0) {
+  //       // Swipe left → next page
+  //       if (page > 0 && page < pages.length && pageFocus === "left") {
+  //         setPageFocus("right");
+  //       } else {
+  //         const newPage = Math.min(pages.length, page + 1);
+  //         handlePageChange(newPage);
+  //         setPageFocus(page === 0 && newPage === 1 ? "right" : "left");
+  //       }
+  //     } else {
+  //       // Swipe right → previous page
+  //       if (page > 0 && page < pages.length && pageFocus === "right") {
+  //         setPageFocus("left");
+  //       } else {
+  //         const newPage = Math.max(0, page - 1);
+  //         handlePageChange(newPage);
+  //         setPageFocus("right");
+  //       }
+  //     }
+  //   };
 
-    window.addEventListener("touchstart", handleTouchStart, { passive: true });
-    window.addEventListener("touchend", handleTouchEnd, { passive: true });
+  //   window.addEventListener("touchstart", handleTouchStart, { passive: true });
+  //   window.addEventListener("touchend", handleTouchEnd, { passive: true });
 
-    return () => {
-      window.removeEventListener("touchstart", handleTouchStart);
-      window.removeEventListener("touchend", handleTouchEnd);
-    };
-  }, [isMobile, page, pages.length, pageFocus, handlePageChange, setPageFocus]);
+  //   return () => {
+  //     window.removeEventListener("touchstart", handleTouchStart);
+  //     window.removeEventListener("touchend", handleTouchEnd);
+  //   };
+  // }, [isMobile, page, pages.length, pageFocus, handlePageChange, setPageFocus]);
 
   // Mark as fully loaded when pages are ready and give a small delay for smooth transition
   React.useEffect(() => {
@@ -215,8 +216,10 @@ export const UI = ({
           onProgress: (completed, total) => {
             setConversionProgress({ completed, total });
           },
-          maxConcurrentPages: 3, // Process 3 pages at once
-          enableCaching: true, // Cache for faster subsequent loads
+          scale: isMobile ? 0.5 : 2,
+          maxDimension: isMobile ? 512 : 2048,
+          maxConcurrentPages: isMobile ? 1 : 3,
+          enableCaching: true,
         });
 
         const images = pages.map((page) => page.dataUrl);
@@ -224,7 +227,7 @@ export const UI = ({
         setIsConverting(false);
       } catch (error) {
         console.error("Error processing PDF:", error);
-        setConversionError(error.message);
+        setConversionError("Failed to process PDF. Please try again.");
         setIsConverting(false);
       }
     };
@@ -256,7 +259,11 @@ export const UI = ({
             <h3 className="text-2xl font-bold text-black mb-4">
               {error ? "Failed to Load Flipbook" : "Conversion Failed"}
             </h3>
-            <p className="text-black/80 mb-6">{error || conversionError}</p>
+            <p className="text-black/80 mb-6">
+              {error
+                ? "Failed to load the flipbook. Please try again."
+                : conversionError}
+            </p>
             <button
               onClick={() => window.location.reload()}
               className="bg-red-500 text-white px-8 py-3 rounded-lg hover:bg-red-600 transition-colors font-semibold"
@@ -323,7 +330,7 @@ export const UI = ({
       >
         {/* FLIPBOOK TITLE */}
         <h1
-          className={`shrink-0 px-4 md:px-10 text-4xl leading-8 md:text-[150px] md:leading-[150px] font-delight font-black -tracking-[0.1rem] pt-4 max-w-[380px] md:max-w-6xl mx-auto ${textColor} ${
+          className={`shrink-0 px-4 md:px-10 text-6xl leading-8 md:text-[150px] md:leading-[150px] font-delight font-black -tracking-[0.1rem] pt-4 max-w-[380px] md:max-w-6xl mx-auto ${textColor} ${
             titleHasSpaces ? "" : "break-all"
           }`}
         >

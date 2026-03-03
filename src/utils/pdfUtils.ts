@@ -5,6 +5,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs
 
 interface PDFConversionOptions {
   scale?: number;
+  maxDimension?: number; // Hard cap on canvas longest side (px) — overrides scale if needed
   useSystemFonts?: boolean;
   maxConcurrentPages?: number;
   onProgress?: (completed: number, total: number) => void;
@@ -32,9 +33,21 @@ async function convertPage(
   doc: any,
   pageNum: number,
   scale: number,
+  maxDimension: number,
 ): Promise<PDFPage> {
   const page = await doc.getPage(pageNum);
-  const viewport = page.getViewport({ scale });
+
+  // Calculate the scale that fits within maxDimension, then take the smaller
+  // of that and the requested scale. This ensures PDFs with large internal
+  // page sizes (A3, print-ready, custom) never produce oversized canvases.
+  const baseViewport = page.getViewport({ scale: 1.0 });
+  const fitScale = Math.min(
+    maxDimension / baseViewport.width,
+    maxDimension / baseViewport.height,
+  );
+  const effectiveScale = Math.min(scale, fitScale);
+
+  const viewport = page.getViewport({ scale: effectiveScale });
 
   // Create canvas for rendering
   const canvas = document.createElement("canvas");
@@ -54,8 +67,8 @@ async function convertPage(
     canvas: canvas,
   }).promise;
 
-  // Convert canvas to data URL
-  const dataUrl = canvas.toDataURL("image/png", 1);
+  // WebP offers the best size/quality ratio; falls back to PNG in unsupported environments
+  const dataUrl = canvas.toDataURL("image/webp", 0.9);
 
   return {
     pageNumber: pageNum,
@@ -78,6 +91,7 @@ async function processPagesInBatches(
   doc: any,
   totalPages: number,
   scale: number,
+  maxDimension: number,
   maxConcurrent: number,
   onProgress?: (completed: number, total: number) => void,
 ): Promise<PDFPage[]> {
@@ -90,7 +104,7 @@ async function processPagesInBatches(
     const batchPromises: Promise<void>[] = [];
 
     for (let pageNum = start; pageNum <= end; pageNum++) {
-      const promise = convertPage(doc, pageNum, scale)
+      const promise = convertPage(doc, pageNum, scale, maxDimension)
         .then((page) => {
           pages[pageNum - 1] = page; // Store in correct position
           completed++;
@@ -127,6 +141,7 @@ export async function PDFtoIMG(
 ): Promise<PDFPage[]> {
   const {
     scale = 2,
+    maxDimension = 2048,
     useSystemFonts = true,
     maxConcurrentPages = 3,
     onProgress,
@@ -169,6 +184,7 @@ export async function PDFtoIMG(
       doc,
       doc.numPages,
       scale,
+      maxDimension,
       maxConcurrentPages,
       onProgress,
     );

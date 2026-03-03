@@ -52,7 +52,14 @@ export const Experience = ({ coverOptions = "default" }) => {
   }, [camera]);
 
   // Handle scroll-based book positioning
-  useFrame(() => {
+  useFrame((_, delta) => {
+    // Smooth mobile camera Z: closer when closed, further when opened
+    if (isMobile) {
+      const targetZ = isBookOpened ? 3.6 : 2.5;
+      camera.position.z = MathUtils.lerp(camera.position.z, targetZ, delta * 3);
+      camera.lookAt(0, 0, 0);
+    }
+
     if (scroll) {
       // Get scroll progress (0 to 1)
       const scrollProgress = scroll.offset;
@@ -62,7 +69,7 @@ export const Experience = ({ coverOptions = "default" }) => {
 
       // Initial position: [0, -1.9, 0]
       // Target position: [0, 0, 0] (centered on Y-axis)
-      const initialY = -1.6;
+      const initialY = isMobile ? -1.05 : -1.5;
       const targetY = 0;
 
       // Interpolate Y position based on scroll progress
@@ -70,7 +77,7 @@ export const Experience = ({ coverOptions = "default" }) => {
 
       // On mobile, when book is opened, move it up a bit
       if (isMobile && isBookOpened) {
-        currentY += 0.2; // Adjust this value to move book higher or lower
+        currentY += 0.1; // Adjust this value to move book higher or lower
       }
 
       // When book is closed (page 0), shift it to center the closed book
