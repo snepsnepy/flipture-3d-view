@@ -82,7 +82,6 @@ const pageMaterials = [
 // Preload textures for book covers
 useTexture.preload(`/textures/book-cover.jpg`);
 useTexture.preload(`/textures/book-back.jpg`);
-useTexture.preload(`/textures/book-cover-roughness.jpg`);
 
 const Page = ({
   number,
@@ -195,8 +194,8 @@ const Page = ({
       loader.load(`/textures/${backTexture}.jpg`, setPicture2);
     }
 
-    // Load roughness texture for covers
-    if (number === 0 || number === pages.length - 1) {
+    // Load roughness texture only for free plan (default cover)
+    if (cover === "default" && (number === 0 || number === pages.length - 1)) {
       loader.load("/textures/book-cover-roughness.jpg", setPictureRoughness);
     }
   }, [front, back, number, pages.length, cover, pages, renderPages]);
@@ -512,7 +511,7 @@ export const Book = ({ pages = [], cover = "default", ...props }) => {
             ? renderPages.length
             : pages.length;
         const isBookOpened = page > 0 && page < totalPages;
-        setBaseScale(isBookOpened ? 1.1 : 0.7);
+        setBaseScale(isBookOpened ? 1.07 : 0.7);
       } else if (isTablet) {
         setBaseScale(0.85);
       } else {

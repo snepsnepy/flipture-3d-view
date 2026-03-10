@@ -8,7 +8,7 @@ import { FlipbookLoader } from "./FlipbookLoader";
 export const pageAtom = atom(0);
 export const scrollProgressAtom = atom(0);
 export const pageFocusAtom = atom("right"); // "left" or "right" - which page of the spread is focused
-export const zoomAtom = atom(1); // Zoom multiplier: min 1.0, max 1.5
+export const zoomAtom = atom(1); // Zoom multiplier: min 1.0, max 1.8
 
 export const UI = ({
   onPagesChange,
@@ -382,85 +382,102 @@ export const UI = ({
       {/* Desktop Zoom Controls - Middle Bottom */}
       {isFullyLoaded && (
         <div
-          className="hidden md:flex fixed bottom-8 left-1/2 transform -translate-x-1/2 items-center gap-3 z-20 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 transition-opacity duration-500 shadow-md"
+          className="hidden md:flex fixed bottom-8 left-1/2 transform -translate-x-1/2 items-center gap-3 z-20 transition-opacity duration-500"
           style={{
             opacity: scrollProgress,
           }}
         >
-          {/* Zoom Out Button */}
-          <button
-            onClick={() =>
-              handleZoomChange(Math.max(1.0, zoom - 0.1), "zoom_out")
-            }
-            disabled={zoom <= 1.0}
-            className={`flex items-center justify-center w-9 h-9 rounded-full transition-all duration-300 ${
-              zoom <= 1.0
-                ? "text-gray-400 cursor-not-allowed"
-                : "text-white hover:bg-white/20 active:scale-95"
-            }`}
-            title="Zoom Out"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-5 h-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          {/* Zoom In / Out pill */}
+          <div className="flex items-center gap-3 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 shadow-md">
+            {/* Zoom Out Button */}
+            <button
+              onClick={() =>
+                handleZoomChange(Math.max(1.0, zoom - 0.1), "zoom_out")
+              }
+              disabled={zoom <= 1.0}
+              className={`flex items-center justify-center w-9 h-9 rounded-full transition-all duration-300 ${
+                zoom <= 1.0
+                  ? "text-gray-400 cursor-not-allowed"
+                  : "text-white hover:bg-white/20 active:scale-95"
+              }`}
+              title="Zoom Out"
             >
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.35-4.35" />
-              <line x1="8" y1="11" x2="14" y2="11" />
-            </svg>
-          </button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-5 h-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+                <line x1="8" y1="11" x2="14" y2="11" />
+              </svg>
+            </button>
 
-          {/* Zoom Indicator */}
-          <div className="text-white text-sm font-medium min-w-[60px] text-center">
-            {Math.round(zoom * 100)}%
+            {/* Zoom Indicator */}
+            <div className="text-white text-sm font-medium min-w-[60px] text-center">
+              {Math.round(zoom * 100)}%
+            </div>
+
+            {/* Zoom In Button */}
+            <button
+              onClick={() =>
+                handleZoomChange(Math.min(1.8, zoom + 0.1), "zoom_in")
+              }
+              disabled={zoom >= 1.8}
+              className={`flex items-center justify-center w-9 h-9 rounded-full transition-all duration-300 ${
+                zoom >= 1.8
+                  ? "text-gray-400 cursor-not-allowed"
+                  : "text-white hover:bg-white/20 active:scale-95"
+              }`}
+              title="Zoom In"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="w-5 h-5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+                <line x1="11" y1="8" x2="11" y2="14" />
+                <line x1="8" y1="11" x2="14" y2="11" />
+              </svg>
+            </button>
           </div>
 
-          {/* Zoom In Button */}
-          <button
-            onClick={() =>
-              handleZoomChange(Math.min(1.5, zoom + 0.1), "zoom_in")
-            }
-            disabled={zoom >= 1.5}
-            className={`flex items-center justify-center w-9 h-9 rounded-full transition-all duration-300 ${
-              zoom >= 1.5
-                ? "text-gray-400 cursor-not-allowed"
-                : "text-white hover:bg-white/20 active:scale-95"
-            }`}
-            title="Zoom In"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-5 h-5"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.35-4.35" />
-              <line x1="11" y1="8" x2="11" y2="14" />
-              <line x1="8" y1="11" x2="14" y2="11" />
-            </svg>
-          </button>
-
-          {/* Reset Zoom Button */}
-          {zoom !== 1 && (
-            <button
-              onClick={() => handleZoomChange(1, "zoom_reset")}
-              className="ml-1 text-white/80 hover:text-white text-xs transition-colors"
-              title="Reset Zoom"
-            >
-              Reset
-            </button>
-          )}
+          {/* Reset Zoom Button - fixed-width slot so the pill never shifts */}
+          <div className="w-[84px] flex items-center justify-center">
+            {zoom !== 1 && (
+              <button
+                onClick={() => handleZoomChange(1, "zoom_reset")}
+                className="flex items-center gap-1.5 px-3 h-[52px] rounded-full text-white/70 hover:text-white bg-white/20 backdrop-blur-sm hover:bg-white/30 transition-all duration-300 active:scale-95 shadow-md"
+                title="Reset Zoom"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="18"
+                  height="18"
+                  viewBox="0 0 512 512"
+                >
+                  <path
+                    fill="currentColor"
+                    fillRule="evenodd"
+                    d="M426.667 106.667v42.666L358 149.33c36.077 31.659 58.188 77.991 58.146 128.474c-.065 78.179-53.242 146.318-129.062 165.376s-154.896-15.838-191.92-84.695C58.141 289.63 72.637 204.42 130.347 151.68a85.33 85.33 0 0 0 33.28 30.507a124.59 124.59 0 0 0-46.294 97.066c1.05 69.942 58.051 126.088 128 126.08c64.072 1.056 118.71-46.195 126.906-109.749c6.124-47.483-15.135-92.74-52.236-118.947L320 256h-42.667V106.667zM202.667 64c23.564 0 42.666 19.103 42.666 42.667s-19.102 42.666-42.666 42.666S160 130.231 160 106.667S179.103 64 202.667 64"
+                  />
+                </svg>
+                <span className="text-sm font-medium">Reset</span>
+              </button>
+            )}
+          </div>
         </div>
       )}
 
@@ -583,11 +600,11 @@ export const UI = ({
           {/* Zoom In Button - Mobile */}
           <button
             onClick={() =>
-              handleZoomChange(Math.min(1.5, zoom + 0.1), "zoom_in")
+              handleZoomChange(Math.min(1.8, zoom + 0.1), "zoom_in")
             }
-            disabled={zoom >= 1.5}
+            disabled={zoom >= 1.8}
             className={`flex items-center justify-center w-10 h-10 rounded-full transition-all duration-300 ${
-              zoom >= 1.5
+              zoom >= 1.8
                 ? "bg-gray-600 text-gray-400 cursor-not-allowed"
                 : "bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 active:scale-95"
             }`}
