@@ -603,10 +603,15 @@ export const Book = ({ pages = [], cover = "default", ...props }) => {
   // Smooth position and zoom transitions using easing
   useFrame((_, delta) => {
     if (groupRef.current) {
-      // Combine external position with mobile offset
+      // When zoomed in, the book scales from its center, pushing the bottom
+      // edge down by (smoothZoom - 1) * PAGE_HEIGHT/2. Shift up proportionally
+      // so the bottom of the book stays within the viewport.
+      const yZoomCompensation =
+        (smoothZoom - 1) * (PAGE_HEIGHT * baseScale) * 0.5;
+
       const targetPosition = [
         (props.position?.[0] || 0) + mobileOffset,
-        props.position?.[1] || 0,
+        (props.position?.[1] || 0) + yZoomCompensation,
         props.position?.[2] || 0,
       ];
 
