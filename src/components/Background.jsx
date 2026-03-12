@@ -221,7 +221,7 @@ const BACKGROUND_CONFIGS = {
         rotationY: 0,
         rotationZ: 235,
         color1: "#5606FF",
-        color2: "#e63535",
+        color2: "#27111d",
         color3: "#000000",
         reflection: 0.1,
         cAzimuthAngle: 180,
